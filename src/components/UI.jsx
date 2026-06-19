@@ -92,7 +92,7 @@ export function Modal({ open, onClose, title, children }) {
 export function FloatingAdd({ onClick }) {
   return (
     <button onClick={onClick} style={{
-      position: "fixed", bottom: 100, right: 20, width: 52, height: 52,
+      position: "fixed", bottom: 140, left: 20, width: 52, height: 52,
       borderRadius: "50%", background: "linear-gradient(135deg, #4ECDC4, #2d9e97)",
       border: "none", color: "#0f0e17", fontSize: 26, cursor: "pointer",
       boxShadow: "0 4px 20px rgba(78,205,196,0.4)",

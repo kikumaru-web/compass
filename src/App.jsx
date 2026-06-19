@@ -30,6 +30,10 @@ export default function App() {
   const [showDeadlineReminder, setShowDeadlineReminder] = useState(false);
   const navRef = useRef(null);
 
+  useEffect(() => {
+    document.documentElement.style.setProperty('--nav-h', navHidden ? '0px' : '110px');
+  }, [navHidden]);
+
   const userId = session?.user?.id;
   const data = useAppData(userId);
 
@@ -261,14 +265,14 @@ export default function App() {
       {/* モバイルボトムナビ */}
       {!isDesktop && (
         <>
-          <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 10 : 115, right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : 113, right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
             {navHidden ? "▲" : "▼"}
           </button>
           {!navHidden && (
             <nav ref={navRef} style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(26,25,41,0.97)", borderTop: `1px solid ${C.cardBorder}`, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", zIndex: 150, paddingBottom: "env(safe-area-inset-bottom)" }}>
               {NAV.map((n) => (
-                <button key={n.id} onClick={() => setView(n.id)} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: view === n.id ? C.teal : "rgba(255,255,255,0.6)", fontFamily: "inherit", padding: "6px 2px", cursor: "pointer" }}>
-                  <span style={{ fontSize: 17 }}>{n.icon}</span>
+                <button key={n.id} onClick={() => setView(n.id)} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: view === n.id ? C.teal : "rgba(255,255,255,0.6)", fontFamily: "inherit", padding: "5px 2px", cursor: "pointer" }}>
+                  <span style={{ fontSize: 15 }}>{n.icon}</span>
                   <span style={{ fontSize: 9, fontWeight: view === n.id ? 700 : 400, whiteSpace: "nowrap" }}>{n.label}</span>
                 </button>
               ))}

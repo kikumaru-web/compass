@@ -31,7 +31,7 @@ export default function App() {
   const navRef = useRef(null);
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--nav-h', navHidden ? '0px' : '110px');
+    document.documentElement.style.setProperty('--nav-h', navHidden ? '0px' : '125px');
   }, [navHidden]);
 
   const userId = session?.user?.id;
@@ -167,7 +167,7 @@ export default function App() {
 
       {/* モバイルヘッダー */}
       {!isDesktop && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: C.bg, borderBottom: `1px solid ${C.cardBorder}`, padding: "12px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: C.bg, borderBottom: `1px solid ${C.cardBorder}`, padding: "12px 16px", paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 20 }}>🧭</span>
             <div>
@@ -183,7 +183,7 @@ export default function App() {
       )}
 
       {/* メインコンテンツ */}
-      <div style={{ flex: 1, marginLeft: isDesktop ? 200 : 0, marginTop: isDesktop ? 0 : 80, width: isDesktop ? "calc(100% - 200px)" : "100%", overflow: "hidden" }}>
+      <div style={{ flex: 1, marginLeft: isDesktop ? 200 : 0, marginTop: isDesktop ? 0 : 56, width: isDesktop ? "calc(100% - 200px)" : "100%", overflow: "hidden" }}>
         <div style={{ padding: isDesktop ? "32px 40px" : "16px 12px 140px", maxWidth: 680, width: "100%", boxSizing: "border-box", margin: "0 auto" }}>
           {view === "companies" && (
             <CompaniesView
@@ -265,7 +265,7 @@ export default function App() {
       {/* モバイルボトムナビ */}
       {!isDesktop && (
         <>
-          <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : 118, right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : 128, right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
             {navHidden ? "▲" : "▼"}
           </button>
           {!navHidden && (

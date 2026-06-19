@@ -31,7 +31,7 @@ export default function App() {
   const navRef = useRef(null);
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--nav-h', navHidden ? '0px' : '125px');
+    document.documentElement.style.setProperty('--nav-h', navHidden ? '0px' : '118px');
   }, [navHidden]);
 
   const userId = session?.user?.id;
@@ -39,9 +39,29 @@ export default function App() {
 
   useEffect(() => {
     if (!session) { setLoading(false); return; }
-    getUser(session.access_token).then((user) => {
-      if (!user) { localStorage.removeItem(SESSION_KEY); setSession(null); }
-      else { window._compassToken = session.access_token; }
+    getUser(session.access_token).then(async (user) => {
+      if (!user && session.refresh_token) {
+        try {
+          const res = await fetch(\`\${SUPABASE_URL}/auth/v1/token?grant_type=refresh_token\`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+            body: JSON.stringify({ refresh_token: session.refresh_token }),
+          });
+          if (res.ok) {
+            const newSession = await res.json();
+            localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
+            window._compassToken = newSession.access_token;
+            setSession(newSession);
+            setLoading(false);
+            return;
+          }
+        } catch {}
+        localStorage.removeItem(SESSION_KEY); setSession(null);
+      } else if (user) {
+        window._compassToken = session.access_token;
+      } else {
+        localStorage.removeItem(SESSION_KEY); setSession(null);
+      }
       setLoading(false);
     });
   }, []);
@@ -167,7 +187,7 @@ export default function App() {
 
       {/* モバイルヘッダー */}
       {!isDesktop && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: C.bg, borderBottom: `1px solid ${C.cardBorder}`, padding: "12px 16px", paddingTop: "calc(env(safe-area-inset-top, 0px) + 12px)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: C.bg, borderBottom: `1px solid ${C.cardBorder}`, padding: "12px 16px", paddingTop: "max(12px, env(safe-area-inset-top, 12px))", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 20 }}>🧭</span>
             <div>
@@ -265,7 +285,7 @@ export default function App() {
       {/* モバイルボトムナビ */}
       {!isDesktop && (
         <>
-          <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : 128, right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : 121, right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
             {navHidden ? "▲" : "▼"}
           </button>
           {!navHidden && (

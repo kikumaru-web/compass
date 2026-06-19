@@ -55,7 +55,7 @@ export function IconBtn({ onClick, kind }) {
 export function Section({ kicker, title, sub, subColor }) {
   return (
     <div style={{ marginBottom: 20 }}>
-      <div style={{ fontSize: 11, letterSpacing: 3, color: C.teal, textTransform: "uppercase", marginBottom: 4 }}>{kicker}</div>
+      <div style={{ fontSize: 11, letterSpacing: 1.5, color: C.teal, textTransform: "uppercase", marginBottom: 4 }}>{kicker}</div>
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
         <h1 style={{ fontSize: 28, fontWeight: 900, margin: 0 }}>{title}</h1>
         {sub && <span style={{ fontSize: 13, color: subColor || C.sub, fontWeight: subColor ? 700 : 400 }}>{sub}</span>}
@@ -92,7 +92,7 @@ export function Modal({ open, onClose, title, children }) {
 export function FloatingAdd({ onClick }) {
   return (
     <button onClick={onClick} style={{
-      position: "fixed", bottom: 90, left: 20, width: 52, height: 52,
+      position: "fixed", bottom: 100, right: 20, width: 52, height: 52,
       borderRadius: "50%", background: "linear-gradient(135deg, #4ECDC4, #2d9e97)",
       border: "none", color: "#0f0e17", fontSize: 26, cursor: "pointer",
       boxShadow: "0 4px 20px rgba(78,205,196,0.4)",

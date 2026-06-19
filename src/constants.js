@@ -78,6 +78,7 @@ export const LINK_CATS = ["OB・OG訪問", "求人・情報収集", "選考対�
 export const STUDY_CATEGORIES = ["SPI非言語","SPI言語","TG-WEB","玉手箱","フェルミ","ケース","GD","フレームワーク","ビジネス知識"];
 export const QA_TAG_PRESETS = ["志望動機","ガクチカ","自己PR","強み・弱み","逆質問","その他"];
 export const DEADLINE_KINDS = [
+  { id: "インターン応募", icon: "🎓", color: "#4ECDC4" },
   { id: "プレエントリー", icon: "📝", color: "#A8E6CF" },
   { id: "ES・書類", icon: "📄", color: "#FFE66D" },
   { id: "ES提出", icon: "📤", color: "#FFE66D" },

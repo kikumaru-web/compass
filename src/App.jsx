@@ -183,8 +183,8 @@ export default function App() {
       )}
 
       {/* メインコンテンツ */}
-      <div style={{ flex: 1, marginLeft: isDesktop ? 200 : 0, marginTop: isDesktop ? 0 : 60 }}>
-        <div style={{ padding: isDesktop ? "32px 40px" : "20px 16px 120px", maxWidth: 680, margin: "0 auto" }}>
+      <div style={{ flex: 1, marginLeft: isDesktop ? 200 : 0, marginTop: isDesktop ? 0 : 70 }}>
+        <div style={{ padding: isDesktop ? "32px 40px" : "20px 16px 140px", maxWidth: 680, margin: "0 auto" }}>
           {view === "companies" && (
             <CompaniesView
               companies={data.companies || []}

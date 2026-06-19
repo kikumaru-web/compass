@@ -42,7 +42,7 @@ export default function App() {
     getUser(session.access_token).then(async (user) => {
       if (!user && session.refresh_token) {
         try {
-          const res = await fetch(\SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
+          const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
             method: "POST",
             headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
             body: JSON.stringify({ refresh_token: session.refresh_token }),

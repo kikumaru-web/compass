@@ -69,6 +69,24 @@ export default function App() {
   useEffect(() => {
     if (session && !loading) {
       data.loadAll().then(() => checkDailyChallenge());
+      const refreshInterval = setInterval(async () => {
+        if (session?.refresh_token) {
+          try {
+            const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
+              body: JSON.stringify({ refresh_token: session.refresh_token }),
+            });
+            if (res.ok) {
+              const s = await res.json();
+              localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+              window._compassToken = s.access_token;
+              setSession(s);
+            }
+          } catch {}
+        }
+      }, 50 * 60 * 1000);
+      return () => clearInterval(refreshInterval);
     }
   }, [session, loading]);
 
@@ -285,7 +303,7 @@ export default function App() {
       {/* モバイルボトムナビ */}
       {!isDesktop && (
         <>
-          <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : 124, right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : 126, right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
             {navHidden ? "▲" : "▼"}
           </button>
           {!navHidden && (

@@ -1,3 +1,4 @@
+import React from 'react';
 import { C } from '../constants.js';
 
 export function Card({ children, style = {}, glow, onClick }) {
@@ -92,7 +93,7 @@ export function Modal({ open, onClose, title, children }) {
 export function FloatingAdd({ onClick }) {
   return (
     <button onClick={onClick} style={{
-      position: "fixed", bottom: "calc(var(--nav-h, 110px) + 20px)", left: 20, width: 52, height: 52,
+      position: "fixed", bottom: "calc(var(--nav-h, 110px) + 28px)", left: 20, width: 52, height: 52,
       borderRadius: "50%", background: "linear-gradient(135deg, #4ECDC4, #2d9e97)",
       border: "none", color: "#0f0e17", fontSize: 26, cursor: "pointer",
       boxShadow: "0 4px 20px rgba(78,205,196,0.4)",
@@ -135,4 +136,25 @@ export function fldrBtn(isOpen) {
     cursor: "pointer", display: "flex", alignItems: "center", gap: 8,
     color: C.text, fontFamily: "inherit", marginBottom: isOpen ? 6 : 0,
   };
+}
+
+
+export function Expand({ open, children }) {
+  const ref = React.useRef(null);
+  const [height, setHeight] = React.useState(open ? "auto" : "0px");
+  React.useEffect(() => {
+    if (open) {
+      const h = ref.current?.scrollHeight || 0;
+      setHeight(h + "px");
+      const t = setTimeout(() => setHeight("auto"), 300);
+      return () => clearTimeout(t);
+    } else {
+      if (ref.current) setHeight(ref.current.scrollHeight + "px");
+      requestAnimationFrame(() => setHeight("0px"));
+    }
+  }, [open]);
+  return React.createElement("div", {
+    ref,
+    style: { overflow: "hidden", height, transition: "height 0.25s ease", opacity: open ? 1 : 0 }
+  }, children);
 }

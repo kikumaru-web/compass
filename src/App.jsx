@@ -183,7 +183,7 @@ export default function App() {
       )}
 
       {/* メインコンテンツ */}
-      <div style={{ flex: 1, marginLeft: isDesktop ? 200 : 0, marginTop: isDesktop ? 0 : 70, width: isDesktop ? "calc(100% - 200px)" : "100%", overflow: "hidden" }}>
+      <div style={{ flex: 1, marginLeft: isDesktop ? 200 : 0, marginTop: isDesktop ? 0 : 80, width: isDesktop ? "calc(100% - 200px)" : "100%", overflow: "hidden" }}>
         <div style={{ padding: isDesktop ? "32px 40px" : "16px 12px 140px", maxWidth: 680, width: "100%", boxSizing: "border-box", margin: "0 auto" }}>
           {view === "companies" && (
             <CompaniesView
@@ -265,7 +265,7 @@ export default function App() {
       {/* モバイルボトムナビ */}
       {!isDesktop && (
         <>
-          <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : 113, right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : 118, right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
             {navHidden ? "▲" : "▼"}
           </button>
           {!navHidden && (

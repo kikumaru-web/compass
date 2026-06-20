@@ -244,7 +244,7 @@ export default function App() {
 
       {/* モバイルボトムナビ */}
       {!isDesktop && (<>
-        <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : "calc(var(--nav-h,120px) + 3px)", right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : "calc(78px + env(safe-area-inset-bottom, 0px) + 3px)", right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
           {navHidden ? "▲" : "▼"}
         </button>
         {!navHidden && (

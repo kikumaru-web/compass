@@ -1,7 +1,6 @@
-import React from "react";
-import { C } from "../constants.js";
+import React from 'react';
+import { C } from '../constants.js';
 
-/* ===== Card ===== */
 export function Card({ children, style = {}, glow, onClick }) {
   return (
     <div onClick={onClick} style={{
@@ -9,40 +8,37 @@ export function Card({ children, style = {}, glow, onClick }) {
       borderRadius: 18, padding: 20,
       ...(glow ? { boxShadow: `0 0 30px ${glow}22` } : {}),
       ...(onClick ? { cursor: "pointer" } : {}),
-      ...style,
+      ...style
     }}>{children}</div>
   );
 }
 
-/* ===== Badge ===== */
 export function Badge({ children, color = C.sub, solid, style: s = {} }) {
   return (
     <span style={{
       fontSize: 11, padding: "3px 10px", borderRadius: 99,
-      background: solid ? color : color + "22",
+      background: solid ? color : `${color}22`,
       color: solid ? "#0f0e17" : color,
-      fontWeight: 700, whiteSpace: "nowrap", ...s,
+      fontWeight: 700, whiteSpace: "nowrap", ...s
     }}>{children}</span>
   );
 }
 
-/* ===== Btn ===== */
 export function Btn({ children, onClick, variant = "primary", style: s = {} }) {
   const variants = {
-    primary: { background: "linear-gradient(135deg,#4ECDC4,#2d9e97)", color: "#0f0e17", fontWeight: 800, border: "none" },
+    primary: { background: "linear-gradient(135deg, #4ECDC4, #2d9e97)", color: "#0f0e17", fontWeight: 800, border: "none" },
     ghost: { background: "rgba(255,255,255,0.06)", color: C.sub, border: `1px solid ${C.cardBorder}`, fontWeight: 600 },
     danger: { background: "rgba(255,107,107,0.15)", color: C.red, border: `1px solid ${C.red}44`, fontWeight: 600 },
   };
   return (
     <button onClick={onClick} style={{
       padding: "12px 20px", borderRadius: 12, cursor: "pointer",
-      fontSize: 14, fontFamily: "inherit",
-      ...(variants[variant] || variants.primary), ...s,
+      fontSize: 14, fontFamily: "inherit", transition: "opacity 0.2s",
+      ...(variants[variant] || variants.primary), ...s
     }}>{children}</button>
   );
 }
 
-/* ===== IconBtn ===== */
 export function IconBtn({ onClick, kind }) {
   const icon = kind === "edit" ? "✎" : "✕";
   const color = kind === "edit" ? C.sub : C.red;
@@ -57,7 +53,6 @@ export function IconBtn({ onClick, kind }) {
   );
 }
 
-/* ===== Section ===== */
 export function Section({ kicker, title, sub, subColor }) {
   return (
     <div style={{ marginBottom: 20 }}>
@@ -70,7 +65,6 @@ export function Section({ kicker, title, sub, subColor }) {
   );
 }
 
-/* ===== Field ===== */
 export function Field({ label, children }) {
   return (
     <div style={{ marginBottom: 14 }}>
@@ -80,7 +74,6 @@ export function Field({ label, children }) {
   );
 }
 
-/* ===== Modal ===== */
 export function Modal({ open, onClose, title, children }) {
   if (!open) return null;
   return (
@@ -97,20 +90,11 @@ export function Modal({ open, onClose, title, children }) {
   );
 }
 
-/* ===== FloatingAdd =====
- * CSS変数 --nav-h（App.jsxが設定）を参照して
- * 左辺からの距離 = ナビ上端からの距離 になるよう配置
- * ボタン直径52px → 辺からの距離 = 18px とすると中心は 18+26=44px
- */
-const FAB_MARGIN = 18;
 export function FloatingAdd({ onClick }) {
   return (
     <button onClick={onClick} style={{
-      position: "fixed",
-      bottom: `calc(var(--nav-h, 120px) + ${FAB_MARGIN}px)`,
-      left: FAB_MARGIN,
-      width: 52, height: 52,
-      borderRadius: "50%", background: "linear-gradient(135deg,#4ECDC4,#2d9e97)",
+      position: "fixed", bottom: "calc(var(--nav-h, 118px) + 16px)", left: 16, width: 52, height: 52,
+      borderRadius: "50%", background: "linear-gradient(135deg, #4ECDC4, #2d9e97)",
       border: "none", color: "#0f0e17", fontSize: 26, cursor: "pointer",
       boxShadow: "0 4px 20px rgba(78,205,196,0.4)",
       display: "flex", alignItems: "center", justifyContent: "center", zIndex: 100,
@@ -118,7 +102,6 @@ export function FloatingAdd({ onClick }) {
   );
 }
 
-/* ===== inputStyle ===== */
 export const inputStyle = {
   width: "100%", padding: "13px 15px", borderRadius: 12,
   border: `1px solid ${C.cardBorder}`, background: "rgba(255,255,255,0.05)",
@@ -126,29 +109,26 @@ export const inputStyle = {
   fontFamily: "inherit", outline: "none",
 };
 
-/* ===== chipBtn ===== */
 export function chipBtn(active, color) {
   return {
     flexShrink: 0, whiteSpace: "nowrap",
     padding: "6px 13px", borderRadius: 99, fontSize: 12, cursor: "pointer",
     fontFamily: "inherit", fontWeight: 600,
     border: `1px solid ${active ? color : "rgba(255,255,255,0.15)"}`,
-    background: active ? color + "22" : "transparent",
+    background: active ? `${color}22` : "transparent",
     color: active ? color : C.sub,
   };
 }
 
-/* ===== tabBtn ===== */
 export function tabBtn(active, color) {
   return {
     flex: 1, padding: "8px 4px", borderRadius: 8, border: "none", cursor: "pointer",
     fontFamily: "inherit", fontSize: 12, fontWeight: active ? 700 : 400,
-    background: active ? color + "33" : "transparent",
+    background: active ? `${color}33` : "transparent",
     color: active ? color : "rgba(255,255,255,0.5)",
   };
 }
 
-/* ===== fldrBtn ===== */
 export function fldrBtn(isOpen) {
   return {
     width: "100%", background: isOpen ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.02)",
@@ -158,37 +138,23 @@ export function fldrBtn(isOpen) {
   };
 }
 
-/* ===== Expand（アニメーション付き開閉ラッパー） =====
- * 使い方: <Expand open={isOpen}><div>折りたたみ内容</div></Expand>
- * 各画面のフォルダ開閉をこれに置き換えると、ぬるっと動く。
- */
-export function Expand({ open, children }) {
-  const innerRef = React.useRef(null);
-  const [style, setStyle] = React.useState({
-    overflow: "hidden",
-    height: open ? "auto" : "0px",
-    opacity: open ? 1 : 0,
-    transition: "height 0.25s ease, opacity 0.2s ease",
-  });
 
+export function Expand({ open, children }) {
+  const ref = React.useRef(null);
+  const [height, setHeight] = React.useState(open ? "auto" : "0px");
   React.useEffect(() => {
-    const el = innerRef.current;
-    if (!el) return;
     if (open) {
-      const h = el.scrollHeight;
-      setStyle((s) => ({ ...s, height: h + "px", opacity: 1 }));
-      const t = setTimeout(() => setStyle((s) => ({ ...s, height: "auto" })), 260);
+      const h = ref.current?.scrollHeight || 0;
+      setHeight(h + "px");
+      const t = setTimeout(() => setHeight("auto"), 300);
       return () => clearTimeout(t);
     } else {
-      const h = el.scrollHeight;
-      setStyle((s) => ({ ...s, height: h + "px", opacity: 1 }));
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          setStyle((s) => ({ ...s, height: "0px", opacity: 0 }));
-        });
-      });
+      if (ref.current) setHeight(ref.current.scrollHeight + "px");
+      requestAnimationFrame(() => setHeight("0px"));
     }
   }, [open]);
-
-  return React.createElement("div", { ref: innerRef, style }, children);
+  return React.createElement("div", {
+    ref,
+    style: { overflow: "hidden", height, transition: "height 0.25s ease", opacity: open ? 1 : 0 }
+  }, children);
 }

@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from "react";
-import { C, NAV, todayStr } from "./constants.js";
+import { C, NAV, todayStr, SUPABASE_URL, SUPABASE_ANON_KEY } from "./constants.js";
 import { signOut, getUser } from "./lib/supabase.js";
 import AuthScreen from "./components/AuthScreen.jsx";
 import useAppData from "./hooks/useAppData.js";
@@ -18,6 +18,20 @@ import InterviewLabView from "./components/InterviewLabView.jsx";
 
 const SESSION_KEY = "compass_session";
 
+/* ── トークンリフレッシュ ── */
+async function refreshSession(session) {
+  if (!session?.refresh_token) return null;
+  try {
+    const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", apikey: SUPABASE_ANON_KEY },
+      body: JSON.stringify({ refresh_token: session.refresh_token }),
+    });
+    if (res.ok) return await res.json();
+  } catch {}
+  return null;
+}
+
 export default function App() {
   const [session, setSession] = useState(() => {
     try { return JSON.parse(localStorage.getItem(SESSION_KEY)); } catch { return null; }
@@ -30,100 +44,85 @@ export default function App() {
   const [showDeadlineReminder, setShowDeadlineReminder] = useState(false);
   const navRef = useRef(null);
 
-  useEffect(() => {
-    document.documentElement.style.setProperty('--nav-h', navHidden ? '0px' : '118px');
-  }, [navHidden]);
-
   const userId = session?.user?.id;
   const data = useAppData(userId);
 
+  /* ── セッション復元 ── */
   useEffect(() => {
     if (!session) { setLoading(false); return; }
-    getUser(session.access_token).then(async (user) => {
-      if (!user && session.refresh_token) {
-        try {
-          const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
-            method: "POST",
-            headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
-            body: JSON.stringify({ refresh_token: session.refresh_token }),
-          });
-          if (res.ok) {
-            const newSession = await res.json();
-            localStorage.setItem(SESSION_KEY, JSON.stringify(newSession));
-            window._compassToken = newSession.access_token;
-            setSession(newSession);
-            setLoading(false);
-            return;
-          }
-        } catch {}
-        localStorage.removeItem(SESSION_KEY); setSession(null);
-      } else if (user) {
-        window._compassToken = session.access_token;
+    (async () => {
+      let user = await getUser(session.access_token);
+      if (!user) {
+        const renewed = await refreshSession(session);
+        if (renewed) {
+          localStorage.setItem(SESSION_KEY, JSON.stringify(renewed));
+          window._compassToken = renewed.access_token;
+          setSession(renewed);
+          setLoading(false);
+          return;
+        }
+        localStorage.removeItem(SESSION_KEY);
+        setSession(null);
       } else {
-        localStorage.removeItem(SESSION_KEY); setSession(null);
+        window._compassToken = session.access_token;
       }
       setLoading(false);
-    });
+    })();
   }, []);
 
+  /* ── データ読み込み＋定期リフレッシュ ── */
   useEffect(() => {
-    if (session && !loading) {
-      data.loadAll().then(() => checkDailyChallenge());
-      const refreshInterval = setInterval(async () => {
-        if (session?.refresh_token) {
-          try {
-            const res = await fetch(SUPABASE_URL + "/auth/v1/token?grant_type=refresh_token", {
-              method: "POST",
-              headers: { "Content-Type": "application/json", "apikey": SUPABASE_ANON_KEY },
-              body: JSON.stringify({ refresh_token: session.refresh_token }),
-            });
-            if (res.ok) {
-              const s = await res.json();
-              localStorage.setItem(SESSION_KEY, JSON.stringify(s));
-              window._compassToken = s.access_token;
-              setSession(s);
-            }
-          } catch {}
-        }
-      }, 50 * 60 * 1000);
-      return () => clearInterval(refreshInterval);
-    }
+    if (!session || loading) return;
+    data.loadAll().then(() => checkDailyChallenge());
+    const timer = setInterval(async () => {
+      const cur = JSON.parse(localStorage.getItem(SESSION_KEY) || "null");
+      const renewed = await refreshSession(cur);
+      if (renewed) {
+        localStorage.setItem(SESSION_KEY, JSON.stringify(renewed));
+        window._compassToken = renewed.access_token;
+        setSession(renewed);
+      }
+    }, 50 * 60 * 1000);
+    return () => clearInterval(timer);
   }, [session, loading]);
 
+  /* ── リサイズ ── */
   useEffect(() => {
     const fn = () => setIsDesktop(window.innerWidth >= 820);
     window.addEventListener("resize", fn);
     return () => window.removeEventListener("resize", fn);
   }, []);
 
-  const onLogin = (sessionData) => {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(sessionData));
-    window._compassToken = sessionData.access_token;
-    setSession(sessionData);
+  /* ── ナビ高さCSS変数 ── */
+  useEffect(() => {
+    document.documentElement.style.setProperty("--nav-h", navHidden || isDesktop ? "0px" : "120px");
+  }, [navHidden, isDesktop]);
+
+  /* ── 認証 ── */
+  const onLogin = (s) => {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(s));
+    window._compassToken = s.access_token;
+    setSession(s);
     setLoading(false);
   };
-
   const onLogout = async () => {
     if (session?.access_token) await signOut(session.access_token);
     localStorage.removeItem(SESSION_KEY);
     setSession(null);
   };
 
+  /* ── Daily Challenge ── */
   const getDailyKey = () => {
-    const now = new Date();
-    const reset = new Date(now);
+    const now = new Date(), reset = new Date(now);
     reset.setHours(4, 0, 0, 0);
     if (now < reset) reset.setDate(reset.getDate() - 1);
-    return `compass_daily_${reset.toISOString().slice(0, 10)}`;
+    return "compass_daily_" + reset.toISOString().slice(0, 10);
   };
   const getDailyDone = () => localStorage.getItem(getDailyKey()) === "done";
   const checkDailyChallenge = () => {
-    const key = getDailyKey();
-    const done = localStorage.getItem(key);
-    const skipped = localStorage.getItem(key + "_skip");
+    const key = getDailyKey(), done = localStorage.getItem(key), skipped = localStorage.getItem(key + "_skip");
     const dlKey = key.replace("compass_daily_", "compass_dlremind_");
-    const dlSeen = localStorage.getItem(dlKey);
-    if (!dlSeen) setShowDeadlineReminder(true);
+    if (!localStorage.getItem(dlKey)) setShowDeadlineReminder(true);
     else if (!done && !skipped) setShowDailyChallenge(true);
   };
   const dismissDeadlineReminder = () => {
@@ -132,12 +131,10 @@ export default function App() {
     const key = getDailyKey();
     if (!localStorage.getItem(key) && !localStorage.getItem(key + "_skip")) setShowDailyChallenge(true);
   };
-  const skipDailyChallenge = (savedProblem) => {
+  const skipDailyChallenge = (p) => {
     const key = getDailyKey();
     localStorage.setItem(key + "_skip", "1");
-    if (savedProblem) {
-      try { localStorage.setItem(key + "_saved_problem", JSON.stringify(savedProblem)); } catch {}
-    }
+    if (p) try { localStorage.setItem(key + "_saved_problem", JSON.stringify(p)); } catch {}
     setShowDailyChallenge(false);
   };
   const completeDailyChallenge = (pts) => {
@@ -150,20 +147,34 @@ export default function App() {
     if (pts > 0) data.addLog({ date: todayStr(), content: "Daily Challenge クリア", minutes: 5, points: pts });
   };
 
-  const { level, totalXP } = (() => {
-    const xp = data.logs.reduce((s, l) => s + (l.points || 0), 0);
-    let lv = 1, rem = xp;
-    while (rem >= lv * 10) { rem -= lv * 10; lv++; }
-    return { level: lv, totalXP: xp };
-  })();
+  const totalXP = data.logs.reduce((s, l) => s + (l.points || 0), 0);
 
+  /* ── ローディング / 未ログイン ── */
   if (loading) return (
     <div style={{ minHeight: "100vh", background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
       <div style={{ color: C.teal, fontSize: 16 }}>読み込み中…</div>
     </div>
   );
-
   if (!session) return <AuthScreen onLogin={onLogin} />;
+
+  /* ── 画面ルーティング ── */
+  const renderView = () => {
+    switch (view) {
+      case "dashboard": return <DashboardView tasks={data.tasks||[]} companies={data.companies||[]} logs={data.logs||[]} deadlines={data.deadlines||[]} rewards={data.rewards||[]} spendable={data.spendable} weekGoal={data.currentGoal} saveWeekGoal={data.saveWeekGoal} setView={setView} addLog={data.addLog} onShowDailyChallenge={() => setShowDailyChallenge(true)} dailyDone={getDailyDone()} />;
+      case "companies": return <CompaniesView companies={data.companies||[]} addCompany={data.companyCrud.add} updateCompany={data.companyCrud.update} deleteCompany={data.companyCrud.del} />;
+      case "deadlines": return <DeadlinesView deadlines={data.deadlines||[]} companies={data.companies||[]} addDeadline={data.deadlineCrud.add} updateDeadline={data.deadlineCrud.update} deleteDeadline={data.deadlineCrud.del} />;
+      case "vault": return <VaultView esAnswers={data.esAnswers||[]} addES={data.esCrud.add} updateES={data.esCrud.update} deleteES={data.esCrud.del} qaLibrary={data.qaLibrary||[]} addQA={data.qaCrud.add} updateQA={data.qaCrud.update} deleteQA={data.qaCrud.del} esMaterials={data.esMaterials||[]} addMat={data.matCrud.add} updateMat={data.matCrud.update} deleteMat={data.matCrud.del} companies={data.companies||[]} />;
+      case "tasks": return <TasksView tasks={data.tasks||[]} addTask={data.taskCrud.add} updateTask={data.taskCrud.update} deleteTask={data.taskCrud.del} logAction={data.addLog} logs={data.logs||[]} deleteLog={data.deleteLog} />;
+      case "log": return <ActionLogView logs={data.logs||[]} addLog={data.addLog} deleteLog={data.deleteLog} />;
+      case "rewards": return <RewardsView spendable={data.spendable} totalXP={totalXP} rewards={data.rewards||[]} redemptions={data.redemptions||[]} redeem={data.redeem} addReward={data.rewardCrud.add} updateReward={data.rewardCrud.update} deleteReward={data.rewardCrud.del} />;
+      case "ideas": return <IdeasView ideas={data.ideas||[]} addIdea={data.ideaCrud.add} deleteIdea={data.ideaCrud.del} updateIdea={data.ideaCrud.update} />;
+      case "ob": return <OBView obVisits={data.obVisits||[]} addOB={data.obCrud.add} updateOB={data.obCrud.update} deleteOB={data.obCrud.del} companies={data.companies||[]} />;
+      case "links": return <LinksView userId={userId} />;
+      case "study": return <StudyView studyProblems={data.studyProblems||[]} setStudyProblems={data.setStudyProblems} studyLogs={data.studyLogs||[]} setStudyLogs={data.setStudyLogs} addLog={data.addLog} userId={userId} />;
+      case "interview": return <InterviewLabView addLog={data.addLog} userId={userId} />;
+      default: return null;
+    }
+  };
 
   return (
     <div style={{ minHeight: "100vh", background: C.bg, color: C.text, fontFamily: "'Inter','Helvetica Neue',sans-serif", display: "flex" }}>
@@ -173,21 +184,13 @@ export default function App() {
         <div style={{ width: 200, background: C.card, borderRight: `1px solid ${C.cardBorder}`, display: "flex", flexDirection: "column", position: "fixed", top: 0, left: 0, height: "100vh", zIndex: 100 }}>
           <div style={{ padding: "20px 16px", borderBottom: `1px solid ${C.cardBorder}` }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg, #4ECDC4, #2d9e97)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🧭</div>
-              <div>
-                <div style={{ fontWeight: 800, fontSize: 14 }}>Compass</div>
-                <div style={{ fontSize: 10, color: C.sub }}>就活OS・同期済</div>
-              </div>
+              <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#4ECDC4,#2d9e97)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🧭</div>
+              <div><div style={{ fontWeight: 800, fontSize: 14 }}>Compass</div><div style={{ fontSize: 10, color: C.sub }}>就活OS・同期済</div></div>
             </div>
           </div>
           <nav style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
             {NAV.map((n) => (
-              <button key={n.id} onClick={() => setView(n.id)} style={{
-                width: "100%", display: "flex", alignItems: "center", gap: 10,
-                padding: "10px 16px", background: view === n.id ? `${C.teal}22` : "none",
-                border: "none", borderLeft: `3px solid ${view === n.id ? C.teal : "transparent"}`,
-                color: view === n.id ? C.teal : C.sub, cursor: "pointer", fontFamily: "inherit", fontSize: 13,
-              }}>
+              <button key={n.id} onClick={() => setView(n.id)} style={{ width: "100%", display: "flex", alignItems: "center", gap: 10, padding: "10px 16px", background: view === n.id ? C.teal + "22" : "none", border: "none", borderLeft: `3px solid ${view === n.id ? C.teal : "transparent"}`, color: view === n.id ? C.teal : C.sub, cursor: "pointer", fontFamily: "inherit", fontSize: 13 }}>
                 <span>{n.icon}</span><span>{n.label}</span>
               </button>
             ))}
@@ -205,119 +208,41 @@ export default function App() {
 
       {/* モバイルヘッダー */}
       {!isDesktop && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: C.bg, borderBottom: `1px solid ${C.cardBorder}`, padding: "12px 16px", paddingTop: "max(12px, env(safe-area-inset-top, 12px))", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, background: C.bg, borderBottom: `1px solid ${C.cardBorder}`, padding: "10px 16px", paddingTop: "calc(env(safe-area-inset-top,0px) + 10px)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 20 }}>🧭</span>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: 14 }}>Compass</div>
-              <div style={{ fontSize: 10, color: C.sub }}>同期済</div>
-            </div>
+            <div><div style={{ fontWeight: 800, fontSize: 14 }}>Compass</div><div style={{ fontSize: 10, color: C.sub }}>同期済</div></div>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <div style={{ background: `${C.yellow}33`, border: `1px solid ${C.yellow}44`, borderRadius: 99, padding: "4px 12px", fontSize: 13, fontWeight: 800, color: C.yellow }}>{data.spendable}pt</div>
+            <div style={{ background: C.yellow + "33", border: `1px solid ${C.yellow}44`, borderRadius: 99, padding: "4px 12px", fontSize: 13, fontWeight: 800, color: C.yellow }}>{data.spendable}pt</div>
             <button onClick={onLogout} style={{ background: "none", border: "none", color: C.faint, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>ログアウト</button>
           </div>
         </div>
       )}
 
       {/* メインコンテンツ */}
-      <div style={{ flex: 1, marginLeft: isDesktop ? 200 : 0, marginTop: isDesktop ? 0 : 90, width: isDesktop ? "calc(100% - 200px)" : "100%", overflow: "hidden" }}>
-        <div style={{ padding: isDesktop ? "32px 40px" : "16px 12px 140px", maxWidth: 680, width: "100%", boxSizing: "border-box", margin: "0 auto" }}>
-          {view === "companies" && (
-            <CompaniesView
-              companies={data.companies || []}
-              addCompany={data.companyCrud.add}
-              updateCompany={data.companyCrud.update}
-              deleteCompany={data.companyCrud.del}
-            />
-          )}
-          {view === "deadlines" && (
-            <DeadlinesView
-              deadlines={data.deadlines || []}
-              companies={data.companies || []}
-              addDeadline={data.deadlineCrud.add}
-              updateDeadline={data.deadlineCrud.update}
-              deleteDeadline={data.deadlineCrud.del}
-            />
-          )}
-          {view === "vault" && (
-            <VaultView
-              esAnswers={data.esAnswers || []}
-              addES={data.esCrud.add}
-              updateES={data.esCrud.update}
-              deleteES={data.esCrud.del}
-              qaLibrary={data.qaLibrary || []}
-              addQA={data.qaCrud.add}
-              updateQA={data.qaCrud.update}
-              deleteQA={data.qaCrud.del}
-              esMaterials={data.esMaterials || []}
-              addMat={data.matCrud.add}
-              updateMat={data.matCrud.update}
-              deleteMat={data.matCrud.del}
-              companies={data.companies || []}
-            />
-          )}
-          {view === "study" && (
-            <StudyView studyProblems={data.studyProblems||[]} setStudyProblems={data.setStudyProblems} studyLogs={data.studyLogs||[]} setStudyLogs={data.setStudyLogs} addLog={data.addLog} userId={userId} />
-          )}
-          {view === "interview" && (
-            <InterviewLabView addLog={data.addLog} userId={userId} />
-          )}
-          {view === "tasks" && (
-            <TasksView tasks={data.tasks||[]} addTask={data.taskCrud.add} updateTask={data.taskCrud.update} deleteTask={data.taskCrud.del} logAction={data.addLog} logs={data.logs||[]} deleteLog={data.deleteLog} />
-          )}
-          {view === "log" && (
-            <ActionLogView logs={data.logs||[]} addLog={data.addLog} deleteLog={data.deleteLog} />
-          )}
-          {view === "rewards" && (
-            <RewardsView spendable={data.spendable} totalXP={(data.logs||[]).reduce((s,l)=>s+(l.points||0),0)} rewards={data.rewards||[]} redemptions={data.redemptions||[]} redeem={data.redeem} addReward={data.rewardCrud.add} updateReward={data.rewardCrud.update} deleteReward={data.rewardCrud.del} />
-          )}
-          {view === "ideas" && (
-            <IdeasView ideas={data.ideas||[]} addIdea={data.ideaCrud.add} deleteIdea={data.ideaCrud.del} updateIdea={data.ideaCrud.update} />
-          )}
-          {view === "ob" && (
-            <OBView obVisits={data.obVisits||[]} addOB={data.obCrud.add} updateOB={data.obCrud.update} deleteOB={data.obCrud.del} companies={data.companies||[]} />
-          )}
-          {view === "links" && (
-            <LinksView userId={userId} />
-          )}
-          {view === "dashboard" && (
-            <DashboardView
-              tasks={data.tasks || []}
-              companies={data.companies || []}
-              logs={data.logs || []}
-              deadlines={data.deadlines || []}
-              rewards={data.rewards || []}
-              spendable={data.spendable}
-              weekGoal={data.currentGoal}
-              saveWeekGoal={data.saveWeekGoal}
-              setView={setView}
-              addLog={data.addLog}
-              onShowDailyChallenge={() => setShowDailyChallenge(true)}
-              dailyDone={getDailyDone()}
-            />
-          )}
+      <div style={{ flex: 1, marginLeft: isDesktop ? 200 : 0, paddingTop: isDesktop ? 0 : "calc(env(safe-area-inset-top,0px) + 64px)", width: isDesktop ? "calc(100% - 200px)" : "100%", overflow: "hidden" }}>
+        <div style={{ padding: isDesktop ? "32px 40px" : "16px 14px 150px", maxWidth: 680, width: "100%", boxSizing: "border-box", margin: "0 auto" }}>
+          {renderView()}
         </div>
       </div>
 
       {/* モバイルボトムナビ */}
-      {!isDesktop && (
-        <>
-          <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : 126, right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
-            {navHidden ? "▲" : "▼"}
-          </button>
-          {!navHidden && (
-            <nav ref={navRef} style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(26,25,41,0.97)", borderTop: `1px solid ${C.cardBorder}`, display: "grid", gridTemplateColumns: "repeat(6, 1fr)", zIndex: 150, paddingBottom: "env(safe-area-inset-bottom)" }}>
-              {NAV.map((n) => (
-                <button key={n.id} onClick={() => setView(n.id)} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: view === n.id ? C.teal : "rgba(255,255,255,0.6)", fontFamily: "inherit", padding: "5px 2px", cursor: "pointer" }}>
-                  <span style={{ fontSize: 15 }}>{n.icon}</span>
-                  <span style={{ fontSize: 9, fontWeight: view === n.id ? 700 : 400, whiteSpace: "nowrap" }}>{n.label}</span>
-                </button>
-              ))}
-            </nav>
-          )}
-        </>
-      )}
+      {!isDesktop && (<>
+        <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : "calc(var(--nav-h,120px) + 3px)", right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          {navHidden ? "▲" : "▼"}
+        </button>
+        {!navHidden && (
+          <nav ref={navRef} style={{ position: "fixed", bottom: 0, left: 0, right: 0, background: "rgba(26,25,41,0.97)", borderTop: `1px solid ${C.cardBorder}`, display: "grid", gridTemplateColumns: "repeat(6,1fr)", zIndex: 150, paddingBottom: "env(safe-area-inset-bottom)" }}>
+            {NAV.map((n) => (
+              <button key={n.id} onClick={() => setView(n.id)} style={{ background: "none", border: "none", display: "flex", flexDirection: "column", alignItems: "center", gap: 2, color: view === n.id ? C.teal : "rgba(255,255,255,0.6)", fontFamily: "inherit", padding: "5px 2px", cursor: "pointer" }}>
+                <span style={{ fontSize: 15 }}>{n.icon}</span>
+                <span style={{ fontSize: 9, fontWeight: view === n.id ? 700 : 400, whiteSpace: "nowrap" }}>{n.label}</span>
+              </button>
+            ))}
+          </nav>
+        )}
+      </>)}
     </div>
   );
 }

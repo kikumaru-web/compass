@@ -11,17 +11,12 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
     <style>
-      :root { --nav-h: 120px; }
       * { margin: 0; padding: 0; box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-      html, body, #root { max-width: 100vw; width: 100%; overflow-x: hidden; }
-      body {
-        font-family: 'Inter', 'Helvetica Neue', sans-serif;
-        background: #0f0e17; color: #fffffe;
-        text-align: left;
-        touch-action: manipulation;
-      }
+      body { font-family: 'Inter', 'Helvetica Neue', sans-serif; background: #0f0e17; color: #fffffe; text-align: left; touch-action: manipulation; overflow-x: hidden; } html, body, #root { max-width: 100vw; width: 100%; overflow-x: hidden; } #root { position: relative; } :root { --nav-h: 110px; }
       button { transition: opacity 0.15s, transform 0.1s; }
       button:active { opacity: 0.75; transform: scale(0.96); }
+      @keyframes fadeSlide { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
+      [style*='flex-direction: column'] > div, [style*='flexDirection: column'] > div { animation: fadeSlide 0.2s ease; }
       input, textarea, select { font-family: 'Inter', 'Helvetica Neue', sans-serif; }
     </style>
   </head>

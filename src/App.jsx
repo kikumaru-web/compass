@@ -95,7 +95,14 @@ export default function App() {
 
   /* ── ナビ高さCSS変数 ── */
   useEffect(() => {
-    document.documentElement.style.setProperty("--nav-h", navHidden || isDesktop ? "0px" : "120px");
+    if (navHidden || isDesktop) {
+      document.documentElement.style.setProperty("--nav-h", "0px");
+    } else if (navRef.current) {
+      const h = navRef.current.getBoundingClientRect().height;
+      document.documentElement.style.setProperty("--nav-h", h + "px");
+    } else {
+      document.documentElement.style.setProperty("--nav-h", "0px");
+    }
   }, [navHidden, isDesktop]);
 
   /* ── 認証 ── */

@@ -99,13 +99,16 @@ export default function App() {
       document.documentElement.style.setProperty("--nav-h", "0px");
       return;
     }
-    const measure = () => {
-      if (navRef.current) {
-        const h = navRef.current.getBoundingClientRect().height;
-        document.documentElement.style.setProperty("--nav-h", h + "px");
-      }
+    const el = navRef.current;
+    if (!el) return;
+    const set = () => {
+      const h = el.getBoundingClientRect().height;
+      if (h > 0) document.documentElement.style.setProperty("--nav-h", h + "px");
     };
-    requestAnimationFrame(() => requestAnimationFrame(measure));
+    set();
+    const ro = new ResizeObserver(set);
+    ro.observe(el);
+    return () => ro.disconnect();
   }, [navHidden, isDesktop]);
 
   /* ── 認証 ── */

@@ -111,7 +111,7 @@ export default function App() {
     const ro = new ResizeObserver(set);
     ro.observe(el);
     return () => ro.disconnect();
-  }, [navHidden, isDesktop]);
+  }, [navHidden, isDesktop, view]);
 
   /* ── 認証 ── */
   const onLogin = (s) => {

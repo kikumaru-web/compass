@@ -15,6 +15,7 @@ import OBView from "./components/OBView.jsx";
 import LinksView from "./components/LinksView.jsx";
 import StudyView from "./components/StudyView.jsx";
 import InterviewLabView from "./components/InterviewLabView.jsx";
+import { DeadlineReminderModal, DailyChallengeModal } from "./components/Modals.jsx";
 
 const SESSION_KEY = "compass_session";
 
@@ -247,6 +248,24 @@ export default function App() {
           </nav>
         )}
       </>)}
+
+      {/* 締切リマインダー */}
+      {showDeadlineReminder && (
+        <DeadlineReminderModal deadlines={data.deadlines||[]} onClose={dismissDeadlineReminder} />
+      )}
+
+      {/* Daily Challenge */}
+      {showDailyChallenge && (
+        <DailyChallengeModal
+          studyProblems={data.studyProblems||[]}
+          setStudyProblems={data.setStudyProblems}
+          studyLogs={data.studyLogs||[]}
+          setStudyLogs={data.setStudyLogs}
+          userId={userId}
+          onComplete={completeDailyChallenge}
+          onSkip={skipDailyChallenge}
+        />
+      )}
     </div>
   );
 }

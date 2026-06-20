@@ -97,21 +97,10 @@ export default function App() {
   useEffect(() => {
     if (navHidden || isDesktop) {
       document.documentElement.style.setProperty("--nav-h", "0px");
-      return;
+    } else {
+      document.documentElement.style.setProperty("--nav-h", "calc(72px + env(safe-area-inset-bottom, 0px))");
     }
-    const el = navRef.current;
-    if (!el) return;
-    const set = () => {
-      const h = el.getBoundingClientRect().height;
-      if (h > 0) document.documentElement.style.setProperty("--nav-h", h + "px");
-    };
-    set();
-    setTimeout(set, 100);
-    setTimeout(set, 500);
-    const ro = new ResizeObserver(set);
-    ro.observe(el);
-    return () => ro.disconnect();
-  }, [navHidden, isDesktop, view]);
+  }, [navHidden, isDesktop]);
 
   /* ── 認証 ── */
   const onLogin = (s) => {
@@ -244,7 +233,7 @@ export default function App() {
 
       {/* モバイルボトムナビ */}
       {!isDesktop && (<>
-        <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : "calc(78px + env(safe-area-inset-bottom, 0px) + 3px)", right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <button onClick={() => setNavHidden(!navHidden)} style={{ position: "fixed", bottom: navHidden ? 8 : "calc(var(--nav-h, 72px) + 3px)", right: 10, zIndex: 200, background: "rgba(26,25,41,0.95)", border: `1px solid ${C.cardBorder}`, borderRadius: 10, width: 32, height: 32, cursor: "pointer", color: C.sub, fontSize: 12, display: "flex", alignItems: "center", justifyContent: "center" }}>
           {navHidden ? "▲" : "▼"}
         </button>
         {!navHidden && (

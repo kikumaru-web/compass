@@ -97,12 +97,15 @@ export default function App() {
   useEffect(() => {
     if (navHidden || isDesktop) {
       document.documentElement.style.setProperty("--nav-h", "0px");
-    } else if (navRef.current) {
-      const h = navRef.current.getBoundingClientRect().height;
-      document.documentElement.style.setProperty("--nav-h", h + "px");
-    } else {
-      document.documentElement.style.setProperty("--nav-h", "0px");
+      return;
     }
+    const measure = () => {
+      if (navRef.current) {
+        const h = navRef.current.getBoundingClientRect().height;
+        document.documentElement.style.setProperty("--nav-h", h + "px");
+      }
+    };
+    requestAnimationFrame(() => requestAnimationFrame(measure));
   }, [navHidden, isDesktop]);
 
   /* ── 認証 ── */

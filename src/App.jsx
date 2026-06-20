@@ -106,6 +106,8 @@ export default function App() {
       if (h > 0) document.documentElement.style.setProperty("--nav-h", h + "px");
     };
     set();
+    setTimeout(set, 100);
+    setTimeout(set, 500);
     const ro = new ResizeObserver(set);
     ro.observe(el);
     return () => ro.disconnect();

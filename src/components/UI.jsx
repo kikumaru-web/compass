@@ -102,7 +102,7 @@ export function Modal({ open, onClose, title, children }) {
  * 左辺からの距離 = ナビ上端からの距離 になるよう配置
  * ボタン直径52px → 辺からの距離 = 18px とすると中心は 18+26=44px
  */
-const FAB_MARGIN = 18;
+const FAB_MARGIN = 20;
 export function FloatingAdd({ onClick }) {
   return (
     <button onClick={onClick} style={{

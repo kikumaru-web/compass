@@ -30,7 +30,7 @@ export const NAV = [
   { id: "links", label: "リンク集", icon: "🔗" },
 ];
 
-export const STAGES = ["気になる","プレエントリー済","ES提出済","一次選考","二次選考以降","最終選考","結果待ち","通過","不合格"];
+export const STAGES = ["気になる","プレエントリー済","インターン応募済","インターン選考中","インターン参加済","ES提出済","一次選考","二次選考以降","最終選考","結果待ち","通過","不合格"];
 export const TIER_COLORS = { S: "#FFE66D", A: "#C3A6FF", B: "#4ECDC4", C: "#A8E6CF" };
 
 export const TIERS = [

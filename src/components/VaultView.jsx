@@ -139,13 +139,13 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
 
   const open = (kind, item) => {
     setEditing(item ? item.id : null);
-    if (kind === "es") setForm(item ? { ...item } : { company: "", company_id: "", question: "", answer: "", char_limit: "", es_category: "", selection_phase: "" });
+    if (kind === "es") setForm(item ? { ...item } : { company: "", company_id: "", question: "", answer: "", subtitle: "", char_limit: "", es_category: "", selection_phase: "" });
     if (kind === "qa") setForm(item ? { ...item } : { question: "", answer: "", tag: "" });
     if (kind === "mat") setForm(item ? { ...item } : { theme: "", episode: "", metric: "", industries: "" });
     setShowModal(true);
   };
   const save = () => {
-    if (tab === "es") { if (!form.question?.trim()) return; const p = { company: form.company || null, question: form.question, answer: form.answer || null, char_limit: form.char_limit ? +form.char_limit : null, es_category: form.es_category || null, selection_phase: form.selection_phase || null }; editing ? updateES(editing, p) : addES(p); }
+    if (tab === "es") { if (!form.question?.trim()) return; const p = { company: form.company || null, question: form.question, answer: form.answer || null, subtitle: form.subtitle || null, char_limit: form.char_limit ? +form.char_limit : null, es_category: form.es_category || null, selection_phase: form.selection_phase || null }; editing ? updateES(editing, p) : addES(p); }
     if (tab === "qa") { if (!form.question?.trim()) return; const p = { question: form.question, answer: form.answer || null, tag: form.tag || null, industry: form.industry || null }; editing ? updateQA(editing, p) : addQA(p); }
     if (tab === "mat") { if (!form.theme?.trim()) return; const p = { theme: form.theme, episode: form.episode || null, metric: form.metric || null, industries: form.industries || null, mat_kind: form.mat_kind || null }; editing ? updateMat(editing, p) : addMat(p); }
     setShowModal(false);
@@ -181,7 +181,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
               {e.answer && <Badge color={C.teal}>{(e.answer || "").length}字</Badge>}
               <span style={{ fontSize: 10, color: isOpen ? C.teal : C.faint }}>{isOpen ? "▼" : "▶"}</span>
             </div>
-            <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: isOpen ? 99 : 2, WebkitBoxOrient: "vertical" }}>{e.question}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: isOpen ? 99 : 2, WebkitBoxOrient: "vertical" }}>{e.question}</div>{e.subtitle && <div style={{ fontSize: 12, color: C.yellow, marginTop: 3, fontWeight: 600 }}>📌 {e.subtitle}</div>}
           </button>
           <div style={{ display: "flex", gap: 6, flexShrink: 0 }}><IconBtn onClick={() => open("es", e)} kind="edit" /><IconBtn onClick={() => deleteES(e.id)} kind="del" /></div>
         </div>
@@ -283,7 +283,8 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
           <Field label="選考フェーズ（任意）"><div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>{esPhases.map((p) => <button key={p} onClick={() => setForm((f) => ({ ...f, selection_phase: f.selection_phase === p ? "" : p }))} style={chipBtn(form.selection_phase === p, phaseColor(p))}>{p}</button>)}</div><input style={inputStyle} value={form.selection_phase || ""} onChange={(e) => setForm((f) => ({ ...f, selection_phase: e.target.value }))} placeholder="または手動入力" /></Field>
           <Field label="設問種別（任意）"><div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>{esCats.map((c) => <button key={c} onClick={() => setForm((f) => ({ ...f, es_category: f.es_category === c ? "" : c }))} style={chipBtn(form.es_category === c, C.yellow)}>{c}</button>)}</div><input style={inputStyle} value={form.es_category || ""} onChange={(e) => setForm((f) => ({ ...f, es_category: e.target.value }))} placeholder="または手動入力" /></Field>
           <Field label="設問"><textarea style={{ ...inputStyle, height: 70, resize: "vertical" }} value={form.question || ""} onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))} placeholder="例：学生時代に力を入れたこと" /></Field>
-          <Field label="文字数制限（任意）"><input style={inputStyle} type="number" value={form.char_limit || ""} onChange={(e) => setForm((f) => ({ ...f, char_limit: e.target.value }))} placeholder="例：400" /></Field>
+          <Field label="見出し・キャッチコピー（任意）"><input style={inputStyle} value={form.subtitle || ""} onChange={(e) => setForm((f) => ({ ...f, subtitle: e.target.value }))} placeholder="例：選んだ記事のタイトル、自分のキャッチコピーなど" /></Field>
+        <Field label="文字数制限（任意）"><input style={inputStyle} type="number" value={form.char_limit || ""} onChange={(e) => setForm((f) => ({ ...f, char_limit: e.target.value }))} placeholder="例：400" /></Field>
           <Field label="回答"><textarea style={{ ...inputStyle, height: 160, resize: "vertical" }} value={form.answer || ""} onChange={(e) => setForm((f) => ({ ...f, answer: e.target.value }))} placeholder="書いた回答を貼り付け" /><div style={{ fontSize: 12, color: (form.answer || "").length > 0 ? C.teal : C.faint, textAlign: "right", marginTop: 4 }}>{(form.answer || "").length}字{form.char_limit && ` / ${form.char_limit}字`}</div></Field>
         </>)}
         {tab === "qa" && (<>

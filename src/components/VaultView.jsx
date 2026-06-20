@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { C, INDUSTRIES, DEADLINE_KINDS, getAnthropicKey } from "../constants";
 import { Badge, Btn, Modal, Field, IconBtn, Section, FloatingAdd, chipBtn, inputStyle, tabBtn, fldrBtn } from "./UI";
 
@@ -127,6 +127,17 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
   const [expandedFolder, setExpandedFolder] = useState({});
   const [form, setForm] = useState({});
   const [esView, setEsView] = useState("company");
+
+  // ES自動保存（3秒間入力がなければ保存）
+  const autoSaveTimer = useRef(null);
+  const autoSave = useCallback((id, data) => {
+    if (autoSaveTimer.current) clearTimeout(autoSaveTimer.current);
+    autoSaveTimer.current = setTimeout(() => {
+      if (id && tab === "es") {
+        updateES(id, data);
+      }
+    }, 3000);
+  }, [tab]);
   const [esCats, saveEsCats] = useESCategories();
   const [esPhases, saveEsPhases] = useESPhases();
   const [showCatEdit, setShowCatEdit] = useState(false);
@@ -285,7 +296,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
           <Field label="設問"><textarea style={{ ...inputStyle, height: 70, resize: "vertical" }} value={form.question || ""} onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))} placeholder="例：学生時代に力を入れたこと" /></Field>
           <Field label="見出し・キャッチコピー（任意）"><input style={inputStyle} value={form.subtitle || ""} onChange={(e) => setForm((f) => ({ ...f, subtitle: e.target.value }))} placeholder="例：選んだ記事のタイトル、自分のキャッチコピーなど" /></Field>
         <Field label="文字数制限（任意）"><input style={inputStyle} type="number" value={form.char_limit || ""} onChange={(e) => setForm((f) => ({ ...f, char_limit: e.target.value }))} placeholder="例：400" /></Field>
-          <Field label="回答"><textarea style={{ ...inputStyle, height: 160, resize: "vertical" }} value={form.answer || ""} onChange={(e) => setForm((f) => ({ ...f, answer: e.target.value }))} placeholder="書いた回答を貼り付け" /><div style={{ fontSize: 12, color: (form.answer || "").length > 0 ? C.teal : C.faint, textAlign: "right", marginTop: 4 }}>{(form.answer || "").length}字{form.char_limit && ` / ${form.char_limit}字`}</div></Field>
+          <Field label="回答"><textarea style={{ ...inputStyle, height: 160, resize: "vertical" }} value={form.answer || ""} onChange={(e) => { const v = e.target.value; setForm((f) => { const updated = { ...f, answer: v }; if (editing) autoSave(editing, { answer: v, subtitle: f.subtitle || null }); return updated; }); }} placeholder="書いた回答を貼り付け" /><div style={{ fontSize: 12, color: (form.answer || "").length > 0 ? C.teal : C.faint, textAlign: "right", marginTop: 4 }}>{(form.answer || "").length}字{form.char_limit && ` / ${form.char_limit}字`}</div></Field>
         </>)}
         {tab === "qa" && (<>
           <Field label="想定質問"><textarea style={{ ...inputStyle, height: 70, resize: "vertical" }} value={form.question || ""} onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))} placeholder="例：なぜこの業界を選んだか？" /></Field>

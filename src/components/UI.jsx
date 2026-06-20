@@ -107,7 +107,7 @@ export function FloatingAdd({ onClick }) {
   return (
     <button onClick={onClick} style={{
       position: "fixed",
-      bottom: `calc(var(--nav-h, 120px) + ${FAB_MARGIN}px)`,
+      bottom: `calc(var(--nav-h, 101px) + env(safe-area-inset-bottom, 0px) + ${FAB_MARGIN}px)`,
       left: FAB_MARGIN,
       width: 52, height: 52,
       borderRadius: "50%", background: "linear-gradient(135deg,#4ECDC4,#2d9e97)",

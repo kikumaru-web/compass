@@ -156,7 +156,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
     setShowModal(true);
   };
   const save = () => {
-    if (tab === "es") { if (!form.question?.trim()) return; const p = { company: form.company || null, question: form.question, answer: form.answer || null, subtitle: form.subtitle || null, char_limit: form.char_limit ? +form.char_limit : null, es_category: form.es_category || null, selection_phase: form.selection_phase || null }; editing ? updateES(editing, p) : addES(p); }
+    if (tab === "es") { if (!form.question?.trim()) return; const p = { company: form.company || null, question: form.question, answer: form.answer || null, char_limit: form.char_limit ? +form.char_limit : null, es_category: form.es_category || null, selection_phase: form.selection_phase || null }; if (form.subtitle?.trim()) p.subtitle = form.subtitle.trim(); editing ? updateES(editing, p) : addES(p); }
     if (tab === "qa") { if (!form.question?.trim()) return; const p = { question: form.question, answer: form.answer || null, tag: form.tag || null, industry: form.industry || null }; editing ? updateQA(editing, p) : addQA(p); }
     if (tab === "mat") { if (!form.theme?.trim()) return; const p = { theme: form.theme, episode: form.episode || null, metric: form.metric || null, industries: form.industries || null, mat_kind: form.mat_kind || null }; editing ? updateMat(editing, p) : addMat(p); }
     setShowModal(false);

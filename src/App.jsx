@@ -190,7 +190,7 @@ export default function App() {
           <div style={{ padding: "20px 16px", borderBottom: `1px solid ${C.cardBorder}` }}>
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               <div style={{ width: 32, height: 32, borderRadius: "50%", background: "linear-gradient(135deg,#4ECDC4,#2d9e97)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16 }}>🧭</div>
-              <div><div style={{ fontWeight: 800, fontSize: 14 }}>Compass</div><div style={{ fontSize: 10, color: C.sub }}>就活OS・同期済</div></div>
+              <div><div style={{ fontWeight: 800, fontSize: 14 }}>Compass</div><div style={{ fontSize: 10, color: C.sub }}>就活OS・同期済</div></div></div><button onClick={onLogout} style={{ background: "none", border: "none", color: C.faint, fontSize: 11, cursor: "pointer", fontFamily: "inherit", padding: "4px 16px" }}>ログアウト</button
             </div>
           </div>
           <nav style={{ flex: 1, overflowY: "auto", padding: "8px 0" }}>
@@ -206,7 +206,7 @@ export default function App() {
               <div style={{ fontSize: 22, fontWeight: 900, color: C.yellow }}>{data.spendable}pt</div>
               <div style={{ fontSize: 10, color: C.teal, marginTop: 4 }}>ご褒美を見る →</div>
             </div>
-            <button onClick={onLogout} style={{ background: "none", border: "none", color: C.faint, fontSize: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "left", marginLeft: 70 }}>ログアウト</button>
+            
           </div>
         </div>
       )}

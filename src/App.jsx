@@ -206,7 +206,7 @@ export default function App() {
               <div style={{ fontSize: 22, fontWeight: 900, color: C.yellow }}>{data.spendable}pt</div>
               <div style={{ fontSize: 10, color: C.teal, marginTop: 4 }}>ご褒美を見る →</div>
             </div>
-            <button onClick={onLogout} style={{ width: "100%", background: "none", border: "none", color: C.faint, fontSize: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "left" }}>ログアウト</button>
+            <button onClick={onLogout} style={{ background: "none", border: "none", color: C.faint, fontSize: 12, cursor: "pointer", fontFamily: "inherit", textAlign: "left", marginLeft: 70 }}>ログアウト</button>
           </div>
         </div>
       )}

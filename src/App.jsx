@@ -200,7 +200,7 @@ export default function App() {
               </button>
             ))}
           </nav>
-          <div style={{ padding: "0 16px 80px" }}>
+          <div style={{ padding: "0 16px 48px" }}>
             <div onClick={() => setView("rewards")} style={{ background: C.bg, borderRadius: 12, padding: 14, marginBottom: 14, border: `1px solid ${C.cardBorder}`, cursor: "pointer" }}>
               <div style={{ fontSize: 10, color: C.faint, marginBottom: 4 }}>使えるpt</div>
               <div style={{ fontSize: 22, fontWeight: 900, color: C.yellow }}>{data.spendable}pt</div>

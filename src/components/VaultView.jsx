@@ -187,7 +187,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
         <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px" }}>
           <button onClick={() => setExpandedCard(isOpen ? null : e.id)} style={{ flex: 1, background: "none", border: "none", textAlign: "left", cursor: "pointer", color: C.text, padding: 0, fontFamily: "inherit", minWidth: 0 }}>
             <div style={{ display: "flex", gap: 5, alignItems: "center", flexWrap: "wrap", marginBottom: 3 }}>
-              {e.selection_phase && <Badge color={phaseColor(e.selection_phase)}>{e.selection_phase}</Badge>}
+              {e.company && <Badge color="#0ea5e9" style={{ fontSize: 10 }}>{e.company}</Badge>}{e.selection_phase && <Badge color={phaseColor(e.selection_phase)}>{e.selection_phase}</Badge>}
               {e.char_limit && <Badge color={C.sub}>{e.char_limit}字</Badge>}
               {e.answer && <Badge color={C.teal}>{(e.answer || "").length}字</Badge>}
               <span style={{ fontSize: 10, color: isOpen ? C.teal : C.faint }}>{isOpen ? "▼" : "▶"}</span>

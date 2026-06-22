@@ -21,7 +21,7 @@ export default function TasksView({ tasks, addTask, updateTask, deleteTask, logA
     updateTask(t.id, { ...t, status: "完了" });
     logAction({ date: todayStr(), content: t.title, minutes: 30, points: t.points || 1 });
   };
-  const quickAdd = () => { if (!quickTitle.trim()) return; addTask({ ...emptyForm, title: quickTitle.trim() }); setQuickTitle(""); };
+  const quickAdd = () => { if (!quickTitle.trim()) return; addTask({ title: quickTitle.trim(), category: null, industry: null, priority: "中", deadline: null, points: 1, status: "未着手", next_action: null }); setQuickTitle(""); };
 
   let filtered = tasks.filter((t) => filter === "all" ? true : filter === "done" ? t.status === "完了" : t.status !== "完了");
   if (catFilter !== "all") filtered = filtered.filter((t) => t.category === catFilter);

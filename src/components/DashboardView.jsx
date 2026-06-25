@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { C, DEADLINE_KINDS, todayStr, daysUntil, calcLevel } from "../constants";
+import { C, DEADLINE_KINDS, TIER_COLOR, todayStr, daysUntil, calcLevel } from "../constants";
 import { Badge, Card, Btn, Section, inputStyle } from "./UI";
 
 function getWeekMonday() {
@@ -117,6 +117,30 @@ export default function DashboardView({ tasks, companies, logs, deadlines, rewar
         </button>
       )}
       {dailyDone && (<div style={{ marginBottom: 16, background: `${C.green}12`, border: `1px solid ${C.green}33`, borderRadius: 16, padding: "10px 18px", display: "flex", alignItems: "center", gap: 12 }}><span style={{ fontSize: 18 }}>✅</span><div style={{ fontSize: 13, color: C.green, fontWeight: 700 }}>今日のDaily Challenge 完了！</div></div>)}
+
+      {(() => {
+        const activeStages = ["プレエントリー済","インターン応募済","インターン選考中","ES提出済","一次選考","二次選考以降","最終選考","結果待ち"];
+        const active = companies.filter((c) => activeStages.includes(c.stage));
+        if (active.length === 0) return null;
+        const stageColor = (s) => s.includes("インターン") ? "#4ECDC4" : s.includes("ES") ? "#FFE66D" : s.includes("選考") || s === "結果待ち" ? "#C3A6FF" : C.sub;
+        return (
+          <Card style={{ marginBottom: 16 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+              <span style={{ fontSize: 12, color: C.sub, letterSpacing: 1, textTransform: "uppercase" }}>🏢 選考中の企業</span>
+              <button onClick={() => setView && setView("companies")} style={{ background: "none", border: "none", color: C.teal, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>すべて →</button>
+            </div>
+            {active.map((c) => (
+              <div key={c.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <Badge color={TIER_COLOR(c.tier)} solid style={{ fontSize: 10, padding: "2px 7px" }}>{c.tier}</Badge>
+                  <span style={{ fontSize: 13 }}>{c.name}</span>
+                </div>
+                <Badge color={stageColor(c.stage)}>{c.stage}</Badge>
+              </div>
+            ))}
+          </Card>
+        );
+      })()}
 
       <Card style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>

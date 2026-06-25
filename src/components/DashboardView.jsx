@@ -118,8 +118,19 @@ export default function DashboardView({ tasks, companies, logs, deadlines, rewar
       )}
       {dailyDone && (<div style={{ marginBottom: 16, background: `${C.green}12`, border: `1px solid ${C.green}33`, borderRadius: 16, padding: "10px 18px", display: "flex", alignItems: "center", gap: 12 }}><span style={{ fontSize: 18 }}>✅</span><div style={{ fontSize: 13, color: C.green, fontWeight: 700 }}>今日のDaily Challenge 完了！</div></div>)}
 
+<Card style={{ marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
+          <span style={{ fontSize: 12, color: C.sub, letterSpacing: 1, textTransform: "uppercase" }}>📅 直近の締切</span>
+          <button onClick={() => setView && setView("deadlines")} style={{ background: "none", border: "none", color: C.teal, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>すべて →</button>
+        </div>
+        {urgent.length === 0 ? <div style={{ color: C.faint, fontSize: 13 }}>7日以内の締切なし</div> : urgent.map((dl) => {
+          const d = daysUntil(dl.due_date); const col = d <= 2 ? C.red : d <= 4 ? C.yellow : C.sub; const kind = DEADLINE_KINDS.find((k) => k.id === dl.kind); const name = dl.kind === "その他" && dl.label ? dl.label : dl.kind;
+          return (<div key={dl.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}><div><div style={{ fontSize: 13 }}>{dl.company_name}</div><div style={{ fontSize: 11, color: C.faint }}>{kind?.icon} {name}</div></div><Badge color={col}>{d === 0 ? "今日" : d === 1 ? "明日" : `${d}日後`}</Badge></div>);
+        })}
+      </Card>
+
       {(() => {
-        const activeStages = ["プレエントリー済","インターン応募済","インターン選考中","ES提出済","一次選考","二次選考以降","最終選考","結果待ち"];
+        const activeStages = ["インターン応募済","インターン選考中","ES提出済","一次選考","二次選考以降","最終選考","結果待ち"];
         const active = companies.filter((c) => activeStages.includes(c.stage));
         if (active.length === 0) return null;
         const stageColor = (s) => s.includes("インターン") ? "#4ECDC4" : s.includes("ES") ? "#FFE66D" : s.includes("選考") || s === "結果待ち" ? "#C3A6FF" : C.sub;
@@ -141,17 +152,6 @@ export default function DashboardView({ tasks, companies, logs, deadlines, rewar
           </Card>
         );
       })()}
-
-      <Card style={{ marginBottom: 16 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10 }}>
-          <span style={{ fontSize: 12, color: C.sub, letterSpacing: 1, textTransform: "uppercase" }}>📅 直近の締切</span>
-          <button onClick={() => setView && setView("deadlines")} style={{ background: "none", border: "none", color: C.teal, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}>すべて →</button>
-        </div>
-        {urgent.length === 0 ? <div style={{ color: C.faint, fontSize: 13 }}>7日以内の締切なし</div> : urgent.map((dl) => {
-          const d = daysUntil(dl.due_date); const col = d <= 2 ? C.red : d <= 4 ? C.yellow : C.sub; const kind = DEADLINE_KINDS.find((k) => k.id === dl.kind); const name = dl.kind === "その他" && dl.label ? dl.label : dl.kind;
-          return (<div key={dl.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "7px 0", borderBottom: "1px solid rgba(255,255,255,0.05)" }}><div><div style={{ fontSize: 13 }}>{dl.company_name}</div><div style={{ fontSize: 11, color: C.faint }}>{kind?.icon} {name}</div></div><Badge color={col}>{d === 0 ? "今日" : d === 1 ? "明日" : `${d}日後`}</Badge></div>);
-        })}
-      </Card>
 
       <Card style={{ marginBottom: 16 }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>

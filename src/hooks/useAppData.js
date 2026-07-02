@@ -87,6 +87,7 @@ export default function useAppData(userId) {
         try { await sbRest("PATCH", `${table}?id=eq.${id}`, data); } catch {}
       },
       del: async (id) => {
+        if (!window.confirm("本当に削除しますか？この操作は取り消せません。")) return;
         setter((p) => p.filter((x) => x.id !== id));
         try { await sbRest("DELETE", `${table}?id=eq.${id}`); } catch {}
       },

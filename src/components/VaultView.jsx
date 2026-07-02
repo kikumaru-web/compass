@@ -136,7 +136,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
       if (id && tab === "es") {
         updateES(id, data);
       }
-    }, 3000);
+    }, 1000);
   }, [tab]);
   const [esCats, saveEsCats] = useESCategories();
   const [esPhases, saveEsPhases] = useESPhases();

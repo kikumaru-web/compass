@@ -23,7 +23,7 @@ export default function useAppData(userId) {
   const loadAll = useCallback(async () => {
     if (!userId) { console.warn("[Compass] loadAll skipped: no userId"); return; }
     console.log("[Compass] loadAll start, userId=", userId);
-    const safe = (p) => p.catch((e) => { console.warn("[Compass] table skip:", e.message); return []; });
+    const safe = (p) => p.catch((e) => { console.warn("[Compass] table skip:", e.message); return null; });
     try {
       const [t,l,c,d,r,red,ob,es,qa,mat,id,lnk,sp,sl,settings] = await Promise.all([
         safe(sbRest("GET", "tasks?order=created_at.desc")),
@@ -42,12 +42,12 @@ export default function useAppData(userId) {
         safe(sbRest("GET", "study_logs?order=created_at.desc")),
         safe(sbRest("GET", `user_settings?user_id=eq.${userId}`)),
       ]);
-      setTasks(t||[]); setLogs(l||[]); setCompanies(c||[]);
+      if(t!==null) setTasks(t); if(l!==null) setLogs(l); if(c!==null) setCompanies(c);
       console.log("[Compass] loaded:", { companies: (c||[]).length, tasks: (t||[]).length, logs: (l||[]).length });
-      setDeadlines(d||[]); setRewards(r||[]); setRedemptions(red||[]);
-      setObVisits(ob||[]); setEsAnswers(es||[]); setQaLibrary(qa||[]);
-      setEsMaterials(mat||[]); setIdeas(id||[]); setUserLinks(lnk||[]);
-      setStudyProblems(sp||[]); setStudyLogs(sl||[]);
+      if(d!==null) setDeadlines(d); if(r!==null) setRewards(r); if(red!==null) setRedemptions(red);
+      if(ob!==null) setObVisits(ob); if(es!==null) setEsAnswers(es); if(qa!==null) setQaLibrary(qa);
+      if(mat!==null) setEsMaterials(mat); if(id!==null) setIdeas(id); if(lnk!==null) setUserLinks(lnk);
+      if(sp!==null) setStudyProblems(sp); if(sl!==null) setStudyLogs(sl);
 
       const totalPts = (l||[]).reduce((s,x) => s+(x.points||0), 0);
       const usedPts = (red||[]).reduce((s,x) => s+(x.cost||0), 0);

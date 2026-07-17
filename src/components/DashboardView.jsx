@@ -152,7 +152,7 @@ export default function DashboardView({ tasks, companies, logs, deadlines, rewar
                     <Badge color={stageColor(c.stage)}>{c.stage} ▾</Badge>
                   </button>
                   {editingStage === c.id && (
-                    <div style={{ position: "absolute", right: 0, top: "100%", marginTop: 4, background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: 6, zIndex: 50, display: "flex", flexDirection: "column", gap: 2, minWidth: 140, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
+                    <div style={{ position: "absolute", right: 0, bottom: "100%", marginBottom: 4, background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: 6, zIndex: 50, display: "flex", flexDirection: "column", gap: 2, minWidth: 140, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
                       {STAGES.map((s) => (
                         <button key={s} onClick={() => { if ((s === "不合格" || s === "通過") && !window.confirm(c.name + " を「" + s + "」に変更しますか？\nホーム画面から非表示になります。")) return; updateCompany(c.id, { stage: s }); setEditingStage(null); }} style={{ background: c.stage === s ? stageColor(s) + "22" : "none", border: s === "不合格" ? "1px solid " + C.red + "33" : "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", color: s === "不合格" ? C.red : c.stage === s ? stageColor(s) : C.sub, fontSize: 12, fontFamily: "inherit", textAlign: "left", fontWeight: c.stage === s ? 700 : 400 }}>{s}</button>
                       ))}

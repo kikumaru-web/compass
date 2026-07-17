@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { C, DEADLINE_KINDS, TIER_COLOR, todayStr, daysUntil, calcLevel } from "../constants";
+import { C, DEADLINE_KINDS, STAGES, TIER_COLOR, todayStr, daysUntil, calcLevel } from "../constants";
 import { Badge, Card, Btn, Section, inputStyle } from "./UI";
 
 function getWeekMonday() {
@@ -55,7 +55,8 @@ function JobTimeline() {
   );
 }
 
-export default function DashboardView({ tasks, companies, logs, deadlines, rewards, spendable, weekGoal, saveWeekGoal, setView, addLog, onShowDailyChallenge, dailyDone }) {
+export default function DashboardView({ tasks, companies, logs, deadlines, rewards, spendable, weekGoal, saveWeekGoal, setView, addLog, onShowDailyChallenge, dailyDone, updateCompany }) {
+  const [editingStage, setEditingStage] = useState(null);
   const [editGoal, setEditGoal] = useState(false);
   const [goalDraft, setGoalDraft] = useState({ points: weekGoal?.points || 20, note: weekGoal?.note || "" });
   const [finishItems, setFinishItems] = useState(() => { try { return JSON.parse(localStorage.getItem("compass_finish_" + todayStr()) || "[]"); } catch { return []; } });
@@ -146,7 +147,18 @@ export default function DashboardView({ tasks, companies, logs, deadlines, rewar
                   <Badge color={TIER_COLOR(c.tier)} solid style={{ fontSize: 10, padding: "2px 7px" }}>{c.tier}</Badge>
                   <span style={{ fontSize: 13 }}>{c.name}</span>
                 </div>
-                <Badge color={stageColor(c.stage)}>{c.stage}</Badge>
+                <div style={{ position: "relative" }}>
+                  <button onClick={() => setEditingStage(editingStage === c.id ? null : c.id)} style={{ background: "none", border: "none", padding: 0, cursor: "pointer" }}>
+                    <Badge color={stageColor(c.stage)}>{c.stage} ▾</Badge>
+                  </button>
+                  {editingStage === c.id && (
+                    <div style={{ position: "absolute", right: 0, top: "100%", marginTop: 4, background: C.card, border: "1px solid " + C.cardBorder, borderRadius: 12, padding: 6, zIndex: 50, display: "flex", flexDirection: "column", gap: 2, minWidth: 140, boxShadow: "0 8px 24px rgba(0,0,0,0.4)" }}>
+                      {STAGES.map((s) => (
+                        <button key={s} onClick={() => { updateCompany(c.id, { stage: s }); setEditingStage(null); }} style={{ background: c.stage === s ? stageColor(s) + "22" : "none", border: "none", borderRadius: 8, padding: "6px 10px", cursor: "pointer", color: c.stage === s ? stageColor(s) : C.sub, fontSize: 12, fontFamily: "inherit", textAlign: "left", fontWeight: c.stage === s ? 700 : 400 }}>{s}</button>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
             ))}
           </Card>

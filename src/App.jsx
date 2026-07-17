@@ -165,7 +165,7 @@ export default function App() {
   /* ── 画面ルーティング ── */
   const renderView = () => {
     switch (view) {
-      case "dashboard": return <DashboardView tasks={data.tasks||[]} companies={data.companies||[]} logs={data.logs||[]} deadlines={data.deadlines||[]} rewards={data.rewards||[]} spendable={data.spendable} weekGoal={data.currentGoal} saveWeekGoal={data.saveWeekGoal} setView={setView} addLog={data.addLog} onShowDailyChallenge={() => setShowDailyChallenge(true)} dailyDone={getDailyDone()} />;
+      case "dashboard": return <DashboardView tasks={data.tasks||[]} companies={data.companies||[]} updateCompany={data.companyCrud.update} logs={data.logs||[]} deadlines={data.deadlines||[]} rewards={data.rewards||[]} spendable={data.spendable} weekGoal={data.currentGoal} saveWeekGoal={data.saveWeekGoal} setView={setView} addLog={data.addLog} onShowDailyChallenge={() => setShowDailyChallenge(true)} dailyDone={getDailyDone()} />;
       case "companies": return <CompaniesView companies={data.companies||[]} addCompany={data.companyCrud.add} updateCompany={data.companyCrud.update} deleteCompany={data.companyCrud.del} />;
       case "deadlines": return <DeadlinesView deadlines={data.deadlines||[]} companies={data.companies||[]} addDeadline={data.deadlineCrud.add} updateDeadline={data.deadlineCrud.update} deleteDeadline={data.deadlineCrud.del} />;
       case "vault": return <VaultView esAnswers={data.esAnswers||[]} addES={data.esCrud.add} updateES={data.esCrud.update} deleteES={data.esCrud.del} qaLibrary={data.qaLibrary||[]} addQA={data.qaCrud.add} updateQA={data.qaCrud.update} deleteQA={data.qaCrud.del} esMaterials={data.esMaterials||[]} addMat={data.matCrud.add} updateMat={data.matCrud.update} deleteMat={data.matCrud.del} companies={data.companies||[]} />;

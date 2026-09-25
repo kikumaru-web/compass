@@ -198,7 +198,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
         </div>
         {isOpen && e.answer && (
           <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 10 }}>
-            <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 6 }}><button onClick={() => navigator.clipboard.writeText(e.answer).catch(() => {})} style={{ ...cpyBtn }}>📋 コピー</button></div>
+            <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginBottom: 6 }}><button onClick={() => navigator.clipboard.writeText(e.question + (e.subtitle ? "\n" + e.subtitle : "")).catch(() => {})} style={{ ...cpyBtn }}>📋 設問コピー</button><button onClick={() => navigator.clipboard.writeText(e.answer).catch(() => {})} style={{ ...cpyBtn }}>📋 回答コピー</button></div>
             <div style={{ fontSize: 13, color: C.sub, whiteSpace: "pre-wrap", lineHeight: 1.7, marginBottom: 12 }}>{e.answer}</div>
             <button onClick={() => checkES(e)} disabled={checkingId === e.id} style={{ fontSize: 11, color: C.teal, background: `${C.teal}15`, border: `1px solid ${C.teal}33`, borderRadius: 99, padding: "4px 12px", cursor: "pointer", fontFamily: "inherit", opacity: checkingId === e.id ? 0.5 : 1 }}>{checkingId === e.id ? "チェック中…" : "🤖 AIにチェックしてもらう"}</button>
             {checkResult?.id === e.id && !checkResult.error && (

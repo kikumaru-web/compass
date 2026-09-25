@@ -1,15 +1,10 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
   <rect width="512" height="512" rx="96" fill="#1a1929"/>
-  <g transform="translate(256,256)">
-    <!-- 北（上）: ティール -->
+  <g transform="translate(256,256) rotate(35)">
     <polygon points="0,-160 50,0 -50,0" fill="#4ECDC4"/>
-    <!-- 北東の影 -->
     <polygon points="0,-160 50,0 0,0" fill="#3dbdb5"/>
-    <!-- 南（下）: レッド -->
     <polygon points="0,160 50,0 -50,0" fill="#E85D5D"/>
-    <!-- 南西の影 -->
     <polygon points="0,160 -50,0 0,0" fill="#c94e4e"/>
-    <!-- 中心の円 -->
     <circle r="18" fill="#FFE66D"/>
     <circle r="8" fill="#1a1929"/>
   </g>

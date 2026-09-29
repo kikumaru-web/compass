@@ -7,7 +7,7 @@ const cpyBtn = { fontSize: 10, color: C.teal, background: `${C.teal}15`, border:
 const QA_TAGS = ["自己PR", "志望動機", "学生時代に力を入れたこと", "強み・弱み", "挫折経験", "チームワーク", "逆質問", "その他"];
 
 /* ── hooks ── */
-const DEFAULT_CATS = ["自己PR", "志望動機", "学生時代", "挫折・困難", "チームワーク", "その他"];
+const DEFAULT_CATS = ["自己PR", "志望動機", "学生時代", "挫折・困難", "チームワーク", "研究内容", "価値観", "記事・ニュース", "自己分析", "その他"];
 function useESCategories() {
   const [cats, setCats] = useState(() => { try { const s = localStorage.getItem("compass_es_cats"); return s ? JSON.parse(s) : DEFAULT_CATS; } catch { return DEFAULT_CATS; } });
   useEffect(() => { if (window._compassRemoteEsCats) { setCats(window._compassRemoteEsCats); window._compassRemoteEsCats = null; } });
@@ -30,6 +30,10 @@ function classifyES(question, cats) {
   if (q.includes("学生") || q.includes("ガクチカ") || q.includes("力を入れ")) return cats.includes("学生時代") ? "学生時代" : cats[cats.length - 1];
   if (q.includes("挫折") || q.includes("失敗") || q.includes("困難")) return cats.includes("挫折・困難") ? "挫折・困難" : cats[cats.length - 1];
   if (q.includes("チーム") || q.includes("協力") || q.includes("リーダー")) return cats.includes("チームワーク") ? "チームワーク" : cats[cats.length - 1];
+  if (q.includes("研究") || q.includes("ゼミ") || q.includes("科目") || q.includes("学問")) return cats.includes("研究内容") ? "研究内容" : cats[cats.length - 1];
+  if (q.includes("価値観") || q.includes("大切") || q.includes("大事")) return cats.includes("価値観") ? "価値観" : cats[cats.length - 1];
+  if (q.includes("記事") || q.includes("ニュース") || q.includes("日経") || q.includes("新聞")) return cats.includes("記事・ニュース") ? "記事・ニュース" : cats[cats.length - 1];
+  if (q.includes("性格") || q.includes("要素") || q.includes("褒め") || q.includes("自分を")) return cats.includes("自己分析") ? "自己分析" : cats[cats.length - 1];
   return cats[cats.length - 1] || "その他";
 }
 
@@ -127,6 +131,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
   const [expandedFolder, setExpandedFolder] = useState({});
   const [form, setForm] = useState({});
   const [esView, setEsView] = useState("company");
+  const [esSearch, setEsSearch] = useState("");
 
   // ES自動保存（3秒間入力がなければ保存）
   const autoSaveTimer = useRef(null);
@@ -228,8 +233,10 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
   };
 
   const renderEsByCompany = () => {
+    const sq = esSearch.trim().toLowerCase();
+    const filtered = sq ? esAnswers.filter((e) => (e.question||"").toLowerCase().includes(sq) || (e.answer||"").toLowerCase().includes(sq) || (e.subtitle||"").toLowerCase().includes(sq) || (e.company||"").toLowerCase().includes(sq)) : esAnswers;
     const industryGroups = {};
-    esAnswers.forEach((e) => { const co = (companies || []).find((c) => c.name === e.company); const industry = co?.industry || (e.company ? "その他" : "企業未設定"); if (!industryGroups[industry]) industryGroups[industry] = {}; const coKey = e.company || "（企業未設定）"; if (!industryGroups[industry][coKey]) industryGroups[industry][coKey] = []; industryGroups[industry][coKey].push(e); });
+    filtered.forEach((e) => { const co = (companies || []).find((c) => c.name === e.company); const industry = co?.industry || (e.company ? "その他" : "企業未設定"); if (!industryGroups[industry]) industryGroups[industry] = {}; const coKey = e.company || "（企業未設定）"; if (!industryGroups[industry][coKey]) industryGroups[industry][coKey] = []; industryGroups[industry][coKey].push(e); });
     return Object.entries(industryGroups).map(([industry, coGroups]) => {
       const indKey = `ind_${industry}`; const isIndOpen = isFolderOpen(indKey); const total = Object.values(coGroups).flat().length;
       return (<div key={industry} style={{ marginBottom: 10 }}><button onClick={() => toggleFolder(indKey)} style={{ width: "100%", background: isIndOpen ? "rgba(78,205,196,0.1)" : "rgba(255,255,255,0.03)", border: `1px solid ${isIndOpen ? C.teal + "44" : C.cardBorder}`, borderRadius: 12, padding: "11px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, color: C.text, fontFamily: "inherit" }}><span style={{ fontSize: 12, color: isIndOpen ? C.teal : C.faint, transition: "transform 0.2s", display: "inline-block", transform: isIndOpen ? "rotate(90deg)" : "none" }}>▶</span><span style={{ textAlign: "left", fontSize: 13, fontWeight: 700, color: isIndOpen ? C.teal : C.text }}>{industry}</span><span style={{ fontSize: 10, background: "#0ea5e922", color: "#0ea5e9", fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>{total}</span></button>
@@ -239,7 +246,9 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
   };
 
   const renderEsByCategory = () => {
-    const groups = {}; esCats.forEach((c) => { groups[c] = []; }); esAnswers.forEach((e) => { const cat = e.es_category || classifyES(e.question, esCats); if (groups[cat]) groups[cat].push(e); else { if (!groups["その他"]) groups["その他"] = []; groups["その他"].push(e); } });
+    const sq = esSearch.trim().toLowerCase();
+    const filteredEs = sq ? esAnswers.filter((e) => (e.question||"").toLowerCase().includes(sq) || (e.answer||"").toLowerCase().includes(sq) || (e.subtitle||"").toLowerCase().includes(sq) || (e.company||"").toLowerCase().includes(sq)) : esAnswers;
+    const groups = {}; esCats.forEach((c) => { groups[c] = []; }); filteredEs.forEach((e) => { const cat = e.es_category || classifyES(e.question, esCats); if (groups[cat]) groups[cat].push(e); else { if (!groups["その他"]) groups["その他"] = []; groups["その他"].push(e); } });
     return Object.entries(groups).filter(([, items]) => items.length > 0).map(([cat, items]) => {
       const isOpen = isFolderOpen(`cat_${cat}`); const phaseGroups = {}; items.forEach((e) => { const ph = e.selection_phase || "フェーズ未設定"; if (!phaseGroups[ph]) phaseGroups[ph] = []; phaseGroups[ph].push(e); }); const hasMultiplePhases = Object.keys(phaseGroups).length > 1;
       return (<div key={cat} style={{ marginBottom: 10 }}><button onClick={() => toggleFolder(`cat_${cat}`)} style={{ width: "100%", background: isOpen ? `${C.yellow}18` : "rgba(255,255,255,0.03)", border: `1px solid ${isOpen ? C.yellow + "44" : C.cardBorder}`, borderRadius: 12, padding: "11px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, color: C.text, fontFamily: "inherit" }}><span style={{ fontSize: 14, color: isOpen ? C.teal : C.faint, transition: "transform 0.2s", display: "inline-block", transform: isOpen ? "rotate(90deg)" : "none" }}>▶</span><span style={{ flex: 1, textAlign: "left", fontSize: 13, fontWeight: 700, color: isOpen ? C.yellow : C.text }}>📂 {cat}</span><span style={{ fontSize: 10, background: "#0ea5e922", color: "#0ea5e9", fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>{items.length}</span></button>{isOpen && (<div style={{ marginTop: 5, paddingLeft: 8, display: "flex", flexDirection: "column", gap: 5 }}>{hasMultiplePhases ? Object.entries(phaseGroups).map(([ph, phItems]) => folder(`cat_${cat}_${ph}`, `📋 ${ph}`, phItems, phaseColor(ph), true)) : items.map(esCard)}</div>)}</div>);
@@ -262,6 +271,9 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
 
       {tab === "es" && (
         <div>
+          <div style={{ marginBottom: 12 }}>
+            <input style={{ ...inputStyle, padding: "10px 14px", fontSize: 13 }} value={esSearch} onChange={(e) => setEsSearch(e.target.value)} placeholder="🔍 設問・回答・見出しを検索" />
+          </div>
           <div style={{ display: "flex", gap: 6, marginBottom: 10 }}><button onClick={() => setEsView("company")} style={tabBtn(esView === "company", "#0ea5e9")}>🏢 企業別</button><button onClick={() => setEsView("category")} style={tabBtn(esView === "category", C.yellow)}>📂 種別</button></div>
           {esView === "category" && (<div style={{ marginBottom: 12 }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: showCatEdit ? 8 : 0 }}><span style={{ fontSize: 11, color: C.faint }}>設問種別を管理</span><button onClick={() => setShowCatEdit(!showCatEdit)} style={{ background: "none", border: "none", color: C.teal, fontSize: 11, cursor: "pointer" }}>{showCatEdit ? "閉じる" : "編集"}</button></div>{showCatEdit && (<div style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.cardBorder}`, borderRadius: 12, padding: 12 }}><div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>{esCats.map((c, i) => (<div key={c} style={{ display: "flex", alignItems: "center", gap: 4, background: `${C.yellow}18`, border: `1px solid ${C.yellow}44`, borderRadius: 99, padding: "4px 10px" }}><span style={{ fontSize: 12, color: C.yellow }}>{c}</span>{esCats.length > 1 && <button onClick={() => saveEsCats(esCats.filter((_, j) => j !== i))} style={{ background: "none", border: "none", color: C.faint, cursor: "pointer", fontSize: 11, padding: 0 }}>✕</button>}</div>))}</div><div style={{ display: "flex", gap: 8 }}><input style={{ ...inputStyle, flex: 1, padding: "8px 12px", fontSize: 13 }} value={newCatInput} onChange={(e) => setNewCatInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newCatInput.trim()) { saveEsCats([...esCats, newCatInput.trim()]); setNewCatInput(""); }}} placeholder="新しい種別を追加" /><Btn onClick={() => { if (newCatInput.trim()) { saveEsCats([...esCats, newCatInput.trim()]); setNewCatInput(""); }}} style={{ padding: "8px 14px", flexShrink: 0 }}>追加</Btn></div></div>)}</div>)}
           <div style={{ marginBottom: 12 }}><div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: showPhaseEdit ? 8 : 0 }}><span style={{ fontSize: 11, color: C.faint }}>選考フェーズを管理</span><button onClick={() => setShowPhaseEdit(!showPhaseEdit)} style={{ background: "none", border: "none", color: C.teal, fontSize: 11, cursor: "pointer" }}>{showPhaseEdit ? "閉じる" : "編集"}</button></div>{showPhaseEdit && (<div style={{ background: "rgba(255,255,255,0.03)", border: `1px solid ${C.cardBorder}`, borderRadius: 12, padding: 12 }}><div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 10 }}>{esPhases.map((p, i) => (<div key={p} style={{ display: "flex", alignItems: "center", gap: 4, background: `${phaseColor(p)}18`, border: `1px solid ${phaseColor(p)}44`, borderRadius: 99, padding: "4px 10px" }}><span style={{ fontSize: 12, color: phaseColor(p) }}>{p}</span>{esPhases.length > 1 && <button onClick={() => saveEsPhases(esPhases.filter((_, j) => j !== i))} style={{ background: "none", border: "none", color: C.faint, cursor: "pointer", fontSize: 11, padding: 0 }}>✕</button>}</div>))}</div><div style={{ display: "flex", gap: 8 }}><input style={{ ...inputStyle, flex: 1, padding: "8px 12px", fontSize: 13 }} value={newPhaseInput} onChange={(e) => setNewPhaseInput(e.target.value)} onKeyDown={(e) => { if (e.key === "Enter" && newPhaseInput.trim()) { saveEsPhases([...esPhases, newPhaseInput.trim()]); setNewPhaseInput(""); }}} placeholder="例：リクルーター面談" /><Btn onClick={() => { if (newPhaseInput.trim()) { saveEsPhases([...esPhases, newPhaseInput.trim()]); setNewPhaseInput(""); }}} style={{ padding: "8px 14px", flexShrink: 0 }}>追加</Btn></div></div>)}</div>

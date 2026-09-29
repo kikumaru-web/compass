@@ -7,7 +7,7 @@ const cpyBtn = { fontSize: 10, color: C.teal, background: `${C.teal}15`, border:
 const QA_TAGS = ["自己PR", "志望動機", "学生時代に力を入れたこと", "強み・弱み", "挫折経験", "チームワーク", "逆質問", "その他"];
 
 /* ── hooks ── */
-const DEFAULT_CATS = ["自己PR", "志望動機", "学生時代", "挫折・困難", "チームワーク", "研究内容", "価値観", "記事・ニュース", "自己分析", "その他"];
+const DEFAULT_CATS = ["自己PR", "志望動機", "学生時代", "挫折・困難", "チームワーク", "研究内容", "記事・ニュース", "その他"];
 function useESCategories() {
   const [cats, setCats] = useState(() => { try { const s = localStorage.getItem("compass_es_cats"); return s ? JSON.parse(s) : DEFAULT_CATS; } catch { return DEFAULT_CATS; } });
   useEffect(() => { if (window._compassRemoteEsCats) { setCats(window._compassRemoteEsCats); window._compassRemoteEsCats = null; } });

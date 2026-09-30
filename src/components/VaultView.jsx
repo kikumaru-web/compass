@@ -9,7 +9,20 @@ const QA_TAGS = ["自己PR", "志望動機", "学生時代に力を入れたこ�
 /* ── hooks ── */
 const DEFAULT_CATS = ["自己PR", "志望動機", "学生時代", "挫折・困難", "チームワーク", "研究内容", "記事・ニュース", "その他"];
 function useESCategories() {
-  const [cats, setCats] = useState(() => { try { const s = localStorage.getItem("compass_es_cats"); return s ? JSON.parse(s) : DEFAULT_CATS; } catch { return DEFAULT_CATS; } });
+  const [cats, setCats] = useState(() => {
+    try {
+      const s = localStorage.getItem("compass_es_cats");
+      if (s) {
+        const saved = JSON.parse(s);
+        const merged = [...saved];
+        DEFAULT_CATS.forEach((c) => { if (!merged.includes(c)) merged.push(c); });
+        const idx = merged.indexOf("その他");
+        if (idx !== -1 && idx !== merged.length - 1) { merged.splice(idx, 1); merged.push("その他"); }
+        return merged;
+      }
+      return DEFAULT_CATS;
+    } catch { return DEFAULT_CATS; }
+  });
   useEffect(() => { if (window._compassRemoteEsCats) { setCats(window._compassRemoteEsCats); window._compassRemoteEsCats = null; } });
   const save = (updated) => { setCats(updated); try { localStorage.setItem("compass_es_cats", JSON.stringify(updated)); } catch {} if (window._compassUpsertSettings) window._compassUpsertSettings({ es_cats: updated }); };
   return [cats, save];

@@ -56,6 +56,7 @@ function QATab({ qaLibrary, deleteQA, openEdit }) {
   const [checkingId, setCheckingId] = useState(null);
   const [showRevision, setShowRevision] = useState({});
   const [qaView, setQaView] = useState("tag");
+  const [qaSearch, setQaSearch] = useState("");
   const toggleFolder = (key) => setOpenFolders((p) => ({ ...p, [key]: !p[key] }));
 
   const checkQA = async (q) => {
@@ -70,9 +71,9 @@ function QATab({ qaLibrary, deleteQA, openEdit }) {
     } catch (e) { setQaFeedback((p) => ({ ...p, [q.id]: { error: "分析に失敗しました: " + e.message } })); } finally { setCheckingId(null); }
   };
 
-  const tagGroups = {}; qaLibrary.forEach((q) => { const k = q.tag || "未分類"; if (!tagGroups[k]) tagGroups[k] = []; tagGroups[k].push(q); });
+  const tagGroups = {}; filteredQA.forEach((q) => { const k = q.tag || "未分類"; if (!tagGroups[k]) tagGroups[k] = []; tagGroups[k].push(q); });
   const sortedTags = [...QA_TAGS, "未分類"].filter((c) => tagGroups[c]); Object.keys(tagGroups).forEach((c) => { if (!sortedTags.includes(c)) sortedTags.push(c); });
-  const indGroups = {}; qaLibrary.forEach((q) => { const k = q.industry || "業界未設定"; if (!indGroups[k]) indGroups[k] = []; indGroups[k].push(q); });
+  const indGroups = {}; filteredQA.forEach((q) => { const k = q.industry || "業界未設定"; if (!indGroups[k]) indGroups[k] = []; indGroups[k].push(q); });
   const sortedInds = [...INDUSTRIES, "業界未設定"].filter((c) => indGroups[c]); Object.keys(indGroups).forEach((c) => { if (!sortedInds.includes(c)) sortedInds.push(c); });
 
   const qaCard = (q) => {
@@ -121,10 +122,14 @@ function QATab({ qaLibrary, deleteQA, openEdit }) {
     return (<div key={cat}><button onClick={() => toggleFolder(`qa_${cat}`)} style={{ ...fldrBtn(isOpen) }}><span style={{ fontSize: 11, color: isOpen ? color : C.faint, display: "inline-block", transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>▶</span><span style={{ fontSize: 13, fontWeight: 600 }}>{cat}</span><span style={{ fontSize: 10, background: "#0ea5e922", color: "#0ea5e9", fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>{items.length}</span></button>{isOpen && <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingLeft: 4 }}>{items.map(qaCard)}</div>}</div>);
   });
 
+  const qsq = qaSearch.trim().toLowerCase();
+  const filteredQA = qsq ? qaLibrary.filter((q) => (q.question||"").toLowerCase().includes(qsq) || (q.answer||"").toLowerCase().includes(qsq) || (q.tag||"").toLowerCase().includes(qsq)) : qaLibrary;
+
   if (qaLibrary.length === 0) return (<div style={{ textAlign: "center", padding: 40, color: C.faint }}>面接の想定問答を貯めよう<br /><span style={{ fontSize: 12 }}>鉄板質問への自分の回答をストック</span></div>);
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+      <div style={{ marginBottom: 4 }}><input style={{ ...inputStyle, padding: "10px 14px", fontSize: 13 }} value={qaSearch} onChange={(e) => setQaSearch(e.target.value)} placeholder="🔍 質問・回答を検索" /></div>
       <div style={{ display: "flex", gap: 4, marginBottom: 4, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 4 }}><button onClick={() => setQaView("ind")} style={tabBtn(qaView === "ind", C.green)}>🏭 業界別</button><button onClick={() => setQaView("tag")} style={tabBtn(qaView === "tag", C.purple)}>📂 種別</button></div>
       {qaView === "tag" ? renderFolder(sortedTags, tagGroups, C.purple) : renderFolder(sortedInds, indGroups, "#0ea5e9")}
     </div>
@@ -139,6 +144,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
   const [expandedCard, setExpandedCard] = useState(null);
   const [matFolders, setMatFolders] = useState({});
   const matViewState = useState("ind");
+  const [matSearch, setMatSearch] = useState("");
   const [expandedFolder, setExpandedFolder] = useState({});
   const [form, setForm] = useState({});
   const [esView, setEsView] = useState("company");
@@ -262,7 +268,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
     const groups = {}; esCats.forEach((c) => { groups[c] = []; }); filteredEs.forEach((e) => { const cat = e.es_category || classifyES(e.question, esCats); if (groups[cat]) groups[cat].push(e); else { if (!groups["その他"]) groups["その他"] = []; groups["その他"].push(e); } });
     return Object.entries(groups).filter(([, items]) => items.length > 0).map(([cat, items]) => {
       const isOpen = isFolderOpen(`cat_${cat}`); const phaseGroups = {}; items.forEach((e) => { const ph = e.selection_phase || "フェーズ未設定"; if (!phaseGroups[ph]) phaseGroups[ph] = []; phaseGroups[ph].push(e); }); const hasMultiplePhases = Object.keys(phaseGroups).length > 1;
-      return (<div key={cat} style={{ marginBottom: 10 }}><button onClick={() => toggleFolder(`cat_${cat}`)} style={{ width: "100%", background: isOpen ? `${C.yellow}18` : "rgba(255,255,255,0.03)", border: `1px solid ${isOpen ? C.yellow + "44" : C.cardBorder}`, borderRadius: 12, padding: "11px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, color: C.text, fontFamily: "inherit" }}><span style={{ fontSize: 14, color: isOpen ? C.teal : C.faint, transition: "transform 0.2s", display: "inline-block", transform: isOpen ? "rotate(90deg)" : "none" }}>▶</span><span style={{ flex: 1, textAlign: "left", fontSize: 13, fontWeight: 700, color: isOpen ? C.yellow : C.text }}>📂 {cat}</span><span style={{ fontSize: 10, background: "#0ea5e922", color: "#0ea5e9", fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>{items.length}</span></button>{isOpen && (<div style={{ marginTop: 5, paddingLeft: 8, display: "flex", flexDirection: "column", gap: 5 }}>{hasMultiplePhases ? Object.entries(phaseGroups).map(([ph, phItems]) => folder(`cat_${cat}_${ph}`, `📋 ${ph}`, phItems, phaseColor(ph), true)) : items.map(esCard)}</div>)}</div>);
+      return (<div key={cat} style={{ marginBottom: 10 }}><button onClick={() => toggleFolder(`cat_${cat}`)} style={{ width: "100%", background: isOpen ? `${C.yellow}18` : "rgba(255,255,255,0.03)", border: `1px solid ${isOpen ? C.yellow + "44" : C.cardBorder}`, borderRadius: 12, padding: "11px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, color: C.text, fontFamily: "inherit" }}><span style={{ fontSize: 14, color: isOpen ? C.teal : C.faint, transition: "transform 0.2s", display: "inline-block", transform: isOpen ? "rotate(90deg)" : "none" }}>▶</span><span style={{ flex: 1, textAlign: "left", fontSize: 13, fontWeight: 700, color: isOpen ? C.yellow : C.text }}>📂 {cat}</span><span style={{ fontSize: 10, background: "#0ea5e922", color: "#0ea5e9", fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>{items.length}</span></button>{isOpen && (<div style={{ marginTop: 5, paddingLeft: 8, display: "flex", flexDirection: "column", gap: 5 }}>{items.map(esCard)}</div>)}</div>);
     });
   };
 
@@ -297,11 +303,12 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
 
       {tab === "mat" && (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ marginBottom: 4 }}><input style={{ ...inputStyle, padding: "10px 14px", fontSize: 13 }} value={matSearch} onChange={(e) => setMatSearch(e.target.value)} placeholder="🔍 テーマ・エピソード・成果を検索" /></div>
           {esMaterials.length === 0 && <div style={{ textAlign: "center", padding: 40, color: C.faint }}>エピソードの「素材」を貯めよう<br /><span style={{ fontSize: 12 }}>例：サークル幹事経験 → 参加率2倍</span></div>}
           {esMaterials.length > 0 && (() => {
             const [matView, setMatView] = matViewState;
-            const indGroups = {}; esMaterials.forEach((m) => { const k = m.industries || "未分類"; if (!indGroups[k]) indGroups[k] = []; indGroups[k].push(m); });
-            const kindGroups = {}; esMaterials.forEach((m) => { const k = m.mat_kind || "種別未設定"; if (!kindGroups[k]) kindGroups[k] = []; kindGroups[k].push(m); });
+            const msq = matSearch.trim().toLowerCase(); const filteredMats = msq ? esMaterials.filter((m) => (m.theme||'').toLowerCase().includes(msq) || (m.episode||'').toLowerCase().includes(msq) || (m.metric||'').toLowerCase().includes(msq)) : esMaterials; const indGroups = {}; filteredMats.forEach((m) => { const k = m.industries || "未分類"; if (!indGroups[k]) indGroups[k] = []; indGroups[k].push(m); });
+            const kindGroups = {}; filteredMats.forEach((m) => { const k = m.mat_kind || "種別未設定"; if (!kindGroups[k]) kindGroups[k] = []; kindGroups[k].push(m); });
             const matCard = (m) => expandCard(m.id, <div><div style={{ fontSize: 13, fontWeight: 700, marginBottom: 4 }}>{m.theme}</div><div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>{m.metric && <Badge color={C.green} style={{ fontSize: 10 }}>{m.metric}</Badge>}{m.mat_kind && <Badge color={C.purple} style={{ fontSize: 10 }}>{m.mat_kind}</Badge>}</div></div>, m.episode, () => open("mat", m), () => deleteMat(m.id));
             const renderFolderGroup = (groups, color) => Object.entries(groups).map(([cat, items]) => { const isOpen = !!matFolders[`mat_${cat}`]; return (<div key={cat}><button onClick={() => setMatFolders((p) => ({ ...p, [`mat_${cat}`]: !p[`mat_${cat}`] }))} style={{ ...fldrBtn(isOpen) }}><span style={{ fontSize: 11, color: isOpen ? color : C.faint, display: "inline-block", transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>▶</span><span style={{ fontSize: 13, fontWeight: 600 }}>{cat}</span><span style={{ fontSize: 10, background: "#0ea5e922", color: "#0ea5e9", fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>{items.length}</span></button>{isOpen && <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingLeft: 4 }}>{items.map(matCard)}</div>}</div>); });
             return (<div><div style={{ display: "flex", gap: 4, marginBottom: 12, background: "rgba(255,255,255,0.04)", borderRadius: 10, padding: 4 }}><button onClick={() => setMatView("ind")} style={tabBtn(matView === "ind", C.green)}>🏭 業界別</button><button onClick={() => setMatView("kind")} style={tabBtn(matView === "kind", C.purple)}>📂 種別</button></div>{matView === "ind" ? renderFolderGroup(indGroups, C.green) : renderFolderGroup(kindGroups, C.purple)}</div>);
@@ -313,7 +320,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title={editing ? "編集" : tab === "es" ? "ES設問を追加" : tab === "qa" ? "想定問答を追加" : "ES素材を追加"}>
         {tab === "es" && (<>
-          <Field label="企業（任意）">{(companies || []).length > 0 && (<div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8, maxHeight: 120, overflowY: "auto" }}>{[...(companies || [])].sort((a, b) => a.name.localeCompare(b.name, "ja")).map((c) => <button key={c.id} onClick={() => setForm((f) => ({ ...f, company: c.name, company_id: c.id }))} style={chipBtn((form.company_id === c.id || form.company === c.name), "#0ea5e9")}>{c.name}</button>)}</div>)}<input style={inputStyle} value={form.company || ""} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value, company_id: "" }))} placeholder="または手動入力 / 鉄板設問なら空欄でOK" /></Field>
+          <Field label="企業（任意）">{(companies || []).length > 0 && (<><input style={{ ...inputStyle, marginBottom: 8, padding: "8px 12px", fontSize: 12 }} placeholder="🔍 企業を絞り込み" onChange={(e) => setForm((f) => ({ ...f, _companySearch: e.target.value }))} value={form._companySearch || ""} /><div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8, maxHeight: 120, overflowY: "auto" }}>{[...(companies || [])].sort((a, b) => a.name.localeCompare(b.name, "ja")).filter((c) => !(form._companySearch||"").trim() || c.name.toLowerCase().includes((form._companySearch||"").trim().toLowerCase())).map((c) => <button key={c.id} onClick={() => setForm((f) => ({ ...f, company: c.name, company_id: c.id }))} style={chipBtn((form.company_id === c.id || form.company === c.name), "#0ea5e9")}>{c.name}</button>)}</div></>)}<input style={inputStyle} value={form.company || ""} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value, company_id: "" }))} placeholder="または手動入力 / 鉄板設問なら空欄でOK" /></Field>
           <Field label="選考フェーズ（任意）"><div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>{esPhases.map((p) => <button key={p} onClick={() => setForm((f) => ({ ...f, selection_phase: f.selection_phase === p ? "" : p }))} style={chipBtn(form.selection_phase === p, phaseColor(p))}>{p}</button>)}</div><input style={inputStyle} value={form.selection_phase || ""} onChange={(e) => setForm((f) => ({ ...f, selection_phase: e.target.value }))} placeholder="または手動入力" /></Field>
           <Field label="設問種別（任意）"><div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>{esCats.map((c) => <button key={c} onClick={() => setForm((f) => ({ ...f, es_category: f.es_category === c ? "" : c }))} style={chipBtn(form.es_category === c, C.yellow)}>{c}</button>)}</div><input style={inputStyle} value={form.es_category || ""} onChange={(e) => setForm((f) => ({ ...f, es_category: e.target.value }))} placeholder="または手動入力" /></Field>
           <Field label="設問"><textarea style={{ ...inputStyle, height: 70, resize: "vertical" }} value={form.question || ""} onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))} placeholder="例：学生時代に力を入れたこと" /></Field>

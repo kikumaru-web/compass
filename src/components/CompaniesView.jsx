@@ -41,6 +41,7 @@ export default function CompaniesView({
   const [form, setForm] = useState(empty);
 
   const [copied, setCopied] = useState(null);
+  const [search, setSearch] = useState("");
 
   /* ── 並べ替え ── */
   const saveOrder = (ids) => {
@@ -61,8 +62,9 @@ export default function CompaniesView({
     return ordered;
   }, [companies, localOrder]);
 
+  const sq = search.trim().toLowerCase();
   const filtered = sortedCompanies.filter(
-    (c) => filter === "all" || c.industry === filter
+    (c) => (filter === "all" || c.industry === filter) && (!sq || (c.name||"").toLowerCase().includes(sq) || (c.industry||"").toLowerCase().includes(sq) || (c.memo||"").toLowerCase().includes(sq) || (c.next_action||"").toLowerCase().includes(sq))
   );
 
   /* ── 業界フォルダグループ ── */
@@ -167,6 +169,10 @@ export default function CompaniesView({
         sub={`${companies.length}社登録中`}
         subColor={C.teal}
       />
+
+      <div style={{ marginBottom: 12 }}>
+        <input style={inputStyle} value={search} onChange={(e) => setSearch(e.target.value)} placeholder="🔍 企業名・メモを検索" style={{ ...inputStyle, padding: "10px 14px", fontSize: 13 }} />
+      </div>
 
       {/* フィルター & 並べ替えトグル */}
       <div

@@ -11,14 +11,17 @@ export default function OBView({ obVisits, addOB, updateOB, deleteOB, companies 
   const isFolderOpen = (key) => !!expandedFolder[key];
   const empty = { person_name: "", company: "", company_id: "", visit_date: "", visit_time: "", role: "", contact: "", impression: "" };
   const [form, setForm] = useState(empty);
+  const [search, setSearch] = useState("");
 
   const openNew = () => { setEditing(null); setForm(empty); setShowModal(true); };
   const openEdit = (o) => { setEditing(o.id); const dt = o.visit_at ? new Date(o.visit_at) : null; setForm({ person_name: o.person_name || "", company: o.company || "", company_id: "", visit_date: dt ? dt.toISOString().slice(0, 10) : "", visit_time: dt ? dt.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit", hour12: false }) : "", role: o.role || "", contact: o.contact || "", impression: o.impression || "" }); setShowModal(true); };
   const save = () => { if (!form.person_name.trim()) return; let visit_at = null; if (form.visit_date) { const dateStr = form.visit_time ? `${form.visit_date}T${form.visit_time}` : `${form.visit_date}T00:00`; visit_at = new Date(dateStr).toISOString(); } const payload = { person_name: form.person_name, company: form.company || null, visit_at, role: form.role || null, contact: form.contact || null, impression: form.impression || null }; if (editing) updateOB(editing, payload); else addOB(payload); setShowModal(false); };
 
   const now = new Date();
-  const upcoming = obVisits.filter((o) => o.visit_at && new Date(o.visit_at) >= now).sort((a, b) => new Date(a.visit_at) - new Date(b.visit_at));
-  const past = obVisits.filter((o) => !o.visit_at || new Date(o.visit_at) < now).sort((a, b) => new Date(b.visit_at || 0) - new Date(a.visit_at || 0));
+  const sq = search.trim().toLowerCase();
+  const searchFilter = (o) => !sq || (o.person_name||"").toLowerCase().includes(sq) || (o.company||"").toLowerCase().includes(sq) || (o.impression||"").toLowerCase().includes(sq) || (o.role||"").toLowerCase().includes(sq);
+  const upcoming = obVisits.filter((o) => o.visit_at && new Date(o.visit_at) >= now && searchFilter(o)).sort((a, b) => new Date(a.visit_at) - new Date(b.visit_at));
+  const past = obVisits.filter((o) => (!o.visit_at || new Date(o.visit_at) < now) && searchFilter(o)).sort((a, b) => new Date(b.visit_at || 0) - new Date(a.visit_at || 0));
 
   const card = (o) => { const isOpen = expandedCard === o.id; const dt = o.visit_at ? new Date(o.visit_at) : null; const hasTime = dt && (dt.getHours() !== 0 || dt.getMinutes() !== 0);
     return (<div key={o.id} style={{ background: C.card, border: `1px solid ${C.cardBorder}`, borderRadius: 12, overflow: "hidden" }}><div style={{ display: "flex", alignItems: "center", padding: "12px 14px" }}><button onClick={() => setExpandedCard(isOpen ? null : o.id)} style={{ flex: 1, background: "none", border: "none", textAlign: "left", cursor: "pointer", color: C.text, padding: 0, fontFamily: "inherit", minWidth: 0 }}><div style={{ fontSize: 14, fontWeight: 700 }}>{o.person_name}{o.role && <span style={{ fontSize: 11, color: C.sub, fontWeight: 400 }}>（{o.role}）</span>}</div><div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center", marginTop: 4 }}>{o.company && <Badge color="#0ea5e9">{o.company}</Badge>}{dt && <span style={{ fontSize: 11, color: C.teal }}>{dt.toLocaleDateString("ja-JP", { month: "numeric", day: "numeric" })}{hasTime && ` ${dt.toLocaleTimeString("ja-JP", { hour: "2-digit", minute: "2-digit" })}`}</span>}{o.contact && <span style={{ fontSize: 11, color: C.faint }}>📱</span>}</div></button><div style={{ display: "flex", gap: 6 }}><IconBtn onClick={() => openEdit(o)} kind="edit" /><IconBtn onClick={() => deleteOB(o.id)} kind="del" /></div></div>
@@ -36,6 +39,7 @@ export default function OBView({ obVisits, addOB, updateOB, deleteOB, companies 
   return (
     <div>
       <Section kicker="人とのつながり" title="OB・OG訪問" sub={`${obVisits.length}人`} subColor={C.teal} />
+      <div style={{ marginBottom: 12 }}><input style={{ ...inputStyle, padding: "10px 14px", fontSize: 13 }} value={search} onChange={(e) => setSearch(e.target.value)} placeholder="🔍 名前・企業・メモを検索" /></div>
       {upcoming.length > 0 && (<div style={{ marginBottom: 20 }}><div style={{ fontSize: 11, letterSpacing: 2, color: C.teal, textTransform: "uppercase", marginBottom: 10 }}>これから</div><div style={{ display: "flex", flexDirection: "column", gap: 8 }}>{upcoming.map(card)}</div></div>)}
       {past.length > 0 && (<div><div style={{ fontSize: 11, letterSpacing: 2, color: C.faint, textTransform: "uppercase", marginBottom: 10 }}>記録（業界・企業別）</div>{renderFolders(past)}</div>)}
       {obVisits.length === 0 && (<div style={{ textAlign: "center", padding: "24px 0", color: C.faint }}><div style={{ fontSize: 36, marginBottom: 10 }}>🤝</div><div style={{ fontSize: 14 }}>OB・OG訪問の予定や記録を残そう</div></div>)}

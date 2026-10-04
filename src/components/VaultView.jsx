@@ -12,15 +12,13 @@ function useESCategories() {
   const [cats, setCats] = useState(() => {
     try {
       const s = localStorage.getItem("compass_es_cats");
-      if (s) {
-        const saved = JSON.parse(s);
-        const merged = [...saved];
-        DEFAULT_CATS.forEach((c) => { if (!merged.includes(c)) merged.push(c); });
-        const idx = merged.indexOf("その他");
-        if (idx !== -1 && idx !== merged.length - 1) { merged.splice(idx, 1); merged.push("その他"); }
-        return merged;
-      }
-      return DEFAULT_CATS;
+      const saved = s ? JSON.parse(s) : [];
+      const merged = [];
+      DEFAULT_CATS.forEach((c) => { if (c !== "その他") merged.push(c); });
+      saved.forEach((c) => { if (!merged.includes(c) && c !== "その他") merged.push(c); });
+      merged.push("その他");
+      localStorage.setItem("compass_es_cats", JSON.stringify(merged));
+      return merged;
     } catch { return DEFAULT_CATS; }
   });
   useEffect(() => { if (window._compassRemoteEsCats) { setCats(window._compassRemoteEsCats); window._compassRemoteEsCats = null; } });
@@ -315,7 +313,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
 
       <Modal open={showModal} onClose={() => setShowModal(false)} title={editing ? "編集" : tab === "es" ? "ES設問を追加" : tab === "qa" ? "想定問答を追加" : "ES素材を追加"}>
         {tab === "es" && (<>
-          <Field label="企業（任意）">{(companies || []).length > 0 && (<div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>{(companies || []).map((c) => <button key={c.id} onClick={() => setForm((f) => ({ ...f, company: c.name, company_id: c.id }))} style={chipBtn((form.company_id === c.id || form.company === c.name), "#0ea5e9")}>{c.name}</button>)}</div>)}<input style={inputStyle} value={form.company || ""} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value, company_id: "" }))} placeholder="または手動入力 / 鉄板設問なら空欄でOK" /></Field>
+          <Field label="企業（任意）">{(companies || []).length > 0 && (<div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8, maxHeight: 120, overflowY: "auto" }}>{[...(companies || [])].sort((a, b) => a.name.localeCompare(b.name, "ja")).map((c) => <button key={c.id} onClick={() => setForm((f) => ({ ...f, company: c.name, company_id: c.id }))} style={chipBtn((form.company_id === c.id || form.company === c.name), "#0ea5e9")}>{c.name}</button>)}</div>)}<input style={inputStyle} value={form.company || ""} onChange={(e) => setForm((f) => ({ ...f, company: e.target.value, company_id: "" }))} placeholder="または手動入力 / 鉄板設問なら空欄でOK" /></Field>
           <Field label="選考フェーズ（任意）"><div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>{esPhases.map((p) => <button key={p} onClick={() => setForm((f) => ({ ...f, selection_phase: f.selection_phase === p ? "" : p }))} style={chipBtn(form.selection_phase === p, phaseColor(p))}>{p}</button>)}</div><input style={inputStyle} value={form.selection_phase || ""} onChange={(e) => setForm((f) => ({ ...f, selection_phase: e.target.value }))} placeholder="または手動入力" /></Field>
           <Field label="設問種別（任意）"><div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>{esCats.map((c) => <button key={c} onClick={() => setForm((f) => ({ ...f, es_category: f.es_category === c ? "" : c }))} style={chipBtn(form.es_category === c, C.yellow)}>{c}</button>)}</div><input style={inputStyle} value={form.es_category || ""} onChange={(e) => setForm((f) => ({ ...f, es_category: e.target.value }))} placeholder="または手動入力" /></Field>
           <Field label="設問"><textarea style={{ ...inputStyle, height: 70, resize: "vertical" }} value={form.question || ""} onChange={(e) => setForm((f) => ({ ...f, question: e.target.value }))} placeholder="例：学生時代に力を入れたこと" /></Field>

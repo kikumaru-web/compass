@@ -71,6 +71,9 @@ function QATab({ qaLibrary, deleteQA, openEdit }) {
     } catch (e) { setQaFeedback((p) => ({ ...p, [q.id]: { error: "分析に失敗しました: " + e.message } })); } finally { setCheckingId(null); }
   };
 
+  const qsq = qaSearch.trim().toLowerCase();
+  const filteredQA = qsq ? qaLibrary.filter((q) => (q.question||"").toLowerCase().includes(qsq) || (q.answer||"").toLowerCase().includes(qsq) || (q.tag||"").toLowerCase().includes(qsq)) : qaLibrary;
+
   const tagGroups = {}; filteredQA.forEach((q) => { const k = q.tag || "未分類"; if (!tagGroups[k]) tagGroups[k] = []; tagGroups[k].push(q); });
   const sortedTags = [...QA_TAGS, "未分類"].filter((c) => tagGroups[c]); Object.keys(tagGroups).forEach((c) => { if (!sortedTags.includes(c)) sortedTags.push(c); });
   const indGroups = {}; filteredQA.forEach((q) => { const k = q.industry || "業界未設定"; if (!indGroups[k]) indGroups[k] = []; indGroups[k].push(q); });
@@ -121,9 +124,6 @@ function QATab({ qaLibrary, deleteQA, openEdit }) {
     const items = groups[cat]; const isOpen = !!openFolders[`qa_${cat}`];
     return (<div key={cat}><button onClick={() => toggleFolder(`qa_${cat}`)} style={{ ...fldrBtn(isOpen) }}><span style={{ fontSize: 11, color: isOpen ? color : C.faint, display: "inline-block", transform: isOpen ? "rotate(90deg)" : "none", transition: "transform 0.2s" }}>▶</span><span style={{ fontSize: 13, fontWeight: 600 }}>{cat}</span><span style={{ fontSize: 10, background: "#0ea5e922", color: "#0ea5e9", fontWeight: 700, padding: "2px 8px", borderRadius: 99 }}>{items.length}</span></button>{isOpen && <div style={{ display: "flex", flexDirection: "column", gap: 6, paddingLeft: 4 }}>{items.map(qaCard)}</div>}</div>);
   });
-
-  const qsq = qaSearch.trim().toLowerCase();
-  const filteredQA = qsq ? qaLibrary.filter((q) => (q.question||"").toLowerCase().includes(qsq) || (q.answer||"").toLowerCase().includes(qsq) || (q.tag||"").toLowerCase().includes(qsq)) : qaLibrary;
 
   if (qaLibrary.length === 0) return (<div style={{ textAlign: "center", padding: 40, color: C.faint }}>面接の想定問答を貯めよう<br /><span style={{ fontSize: 12 }}>鉄板質問への自分の回答をストック</span></div>);
 

@@ -214,7 +214,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
               {e.answer && <Badge color={C.teal}>{(e.answer || "").length}字</Badge>}
               <span style={{ fontSize: 10, color: isOpen ? C.teal : C.faint }}>{isOpen ? "▼" : "▶"}</span>
             </div>
-            <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: isOpen ? 99 : 2, WebkitBoxOrient: "vertical" }}>{e.question}</div>{e.subtitle && <div style={{ fontSize: 12, color: C.yellow, marginTop: 3, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>📌 {e.subtitle}<button onClick={(ev) => { ev.stopPropagation(); navigator.clipboard.writeText(e.subtitle).catch(() => {}); }} style={{ ...cpyBtn, fontSize: 9, padding: "1px 6px" }}>📋</button></div>}
+            <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: isOpen ? 99 : 2, WebkitBoxOrient: "vertical" }}>{e.question}</div>{e.subtitle && <div onClick={(ev) => ev.stopPropagation()} style={{ fontSize: 12, color: C.yellow, marginTop: 3, fontWeight: 600, display: "flex", alignItems: "center", gap: 6, cursor: "default" }}>📌 {e.subtitle}<button onClick={(ev) => { ev.stopPropagation(); ev.preventDefault(); navigator.clipboard.writeText(e.subtitle).catch(() => {}); }} style={{ ...cpyBtn, fontSize: 9, padding: "1px 6px", cursor: "pointer" }}>📋</button></div>}
           </button>
           <div style={{ display: "flex", gap: 6, flexShrink: 0 }}><IconBtn onClick={() => open("es", e)} kind="edit" /><IconBtn onClick={() => deleteES(e.id)} kind="del" /></div>
         </div>

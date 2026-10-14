@@ -214,10 +214,11 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
               {e.answer && <Badge color={C.teal}>{(e.answer || "").length}字</Badge>}
               <span style={{ fontSize: 10, color: isOpen ? C.teal : C.faint }}>{isOpen ? "▼" : "▶"}</span>
             </div>
-            <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: isOpen ? 99 : 2, WebkitBoxOrient: "vertical" }}>{e.question}</div>{e.subtitle && <div onClick={(ev) => ev.stopPropagation()} style={{ fontSize: 12, color: C.yellow, marginTop: 3, fontWeight: 600, display: "flex", alignItems: "center", gap: 6, cursor: "default" }}>📌 {e.subtitle}<button onClick={(ev) => { ev.stopPropagation(); ev.preventDefault(); navigator.clipboard.writeText(e.subtitle).catch(() => {}); }} style={{ ...cpyBtn, fontSize: 9, padding: "1px 6px", cursor: "pointer" }}>📋</button></div>}
+            <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: isOpen ? 99 : 2, WebkitBoxOrient: "vertical" }}>{e.question}</div>
           </button>
           <div style={{ display: "flex", gap: 6, flexShrink: 0 }}><IconBtn onClick={() => open("es", e)} kind="edit" /><IconBtn onClick={() => deleteES(e.id)} kind="del" /></div>
         </div>
+        {e.subtitle && <div style={{ padding: "0 14px 6px", fontSize: 12, color: C.yellow, fontWeight: 600, display: "flex", alignItems: "center", gap: 6 }}>📌 {e.subtitle}<button onClick={() => navigator.clipboard.writeText(e.subtitle).catch(() => {})} style={{ ...cpyBtn, fontSize: 9, padding: "1px 6px" }}>📋</button></div>}
         {isOpen && e.answer && (
           <div style={{ padding: "0 14px 12px", borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: 10 }}>
             <div style={{ display: "flex", justifyContent: "flex-end", gap: 6, marginBottom: 6 }}><button onClick={() => navigator.clipboard.writeText(e.question + (e.subtitle ? "\n" + e.subtitle : "")).catch(() => {})} style={{ ...cpyBtn }}>📋 設問コピー</button><button onClick={() => navigator.clipboard.writeText(e.answer).catch(() => {})} style={{ ...cpyBtn }}>📋 回答コピー</button></div>

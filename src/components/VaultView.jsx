@@ -167,7 +167,16 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
   const [newCatInput, setNewCatInput] = useState("");
   const [newPhaseInput, setNewPhaseInput] = useState("");
 
-  const toggleFolder = (key) => { setExpandedFolder((p) => ({ ...p, [key]: !p[key] })); setExpandedCard(null); };
+  const toggleFolder = (key) => {
+    setExpandedFolder((p) => {
+      const next = { ...p, [key]: !p[key] };
+      if (p[key]) {
+        Object.keys(next).forEach((k) => { if (k.startsWith(key + "_") || k.startsWith("co_")) next[k] = false; });
+      }
+      return next;
+    });
+    setExpandedCard(null);
+  };
   const isFolderOpen = (key) => !!expandedFolder[key];
 
   const open = (kind, item) => {

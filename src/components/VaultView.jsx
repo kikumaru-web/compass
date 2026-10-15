@@ -57,7 +57,7 @@ function QATab({ qaLibrary, deleteQA, openEdit }) {
   const [showRevision, setShowRevision] = useState({});
   const [qaView, setQaView] = useState("tag");
   const [qaSearch, setQaSearch] = useState("");
-  const toggleFolder = (key) => setOpenFolders((p) => ({ ...p, [key]: !p[key] }));
+  const toggleFolder = (key) => { setOpenFolders((p) => ({ ...p, [key]: !p[key] })); setExpanded(null); };
 
   const checkQA = async (q) => {
     const key = getAnthropicKey(); if (!key) { alert("StudyタブでClaude APIキーを設定してください"); return; }
@@ -167,7 +167,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
   const [newCatInput, setNewCatInput] = useState("");
   const [newPhaseInput, setNewPhaseInput] = useState("");
 
-  const toggleFolder = (key) => setExpandedFolder((p) => ({ ...p, [key]: !p[key] }));
+  const toggleFolder = (key) => { setExpandedFolder((p) => ({ ...p, [key]: !p[key] })); setExpandedCard(null); };
   const isFolderOpen = (key) => !!expandedFolder[key];
 
   const open = (kind, item) => {

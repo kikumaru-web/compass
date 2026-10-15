@@ -10,7 +10,7 @@ export default function IdeasView({ ideas, addIdea, deleteIdea, updateIdea }) {
   const [form, setForm] = useState({ title: "", content: "", category: "" });
   const [expanded, setExpanded] = useState(null);
   const [openFolders, setOpenFolders] = useState({});
-  const toggleFolder = (key) => setOpenFolders((p) => ({ ...p, [key]: !p[key] }));
+  const toggleFolder = (key) => { setOpenFolders((p) => ({ ...p, [key]: !p[key] })); setExpanded(null); };
   const openNew = () => { setEditing(null); setForm({ title: "", content: "", category: "" }); setShowModal(true); };
   const openEdit = (i) => { setEditing(i.id); setForm({ title: i.title || "", content: i.content || "", category: i.category || "" }); setShowModal(true); };
   const save = () => { if (!form.title.trim() && !form.content.trim()) return; const payload = { title: form.title.trim() || (form.content.trim().slice(0, 20)), content: form.content, category: form.category || null }; if (editing) updateIdea(editing, payload); else addIdea(payload); setShowModal(false); };

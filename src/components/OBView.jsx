@@ -7,7 +7,7 @@ export default function OBView({ obVisits, addOB, updateOB, deleteOB, companies 
   const [editing, setEditing] = useState(null);
   const [expandedCard, setExpandedCard] = useState(null);
   const [expandedFolder, setExpandedFolder] = useState({});
-  const toggleFolder = (key) => setExpandedFolder((p) => ({ ...p, [key]: !p[key] }));
+  const toggleFolder = (key) => { setExpandedFolder((p) => ({ ...p, [key]: !p[key] })); setExpandedCard(null); };
   const isFolderOpen = (key) => !!expandedFolder[key];
   const empty = { person_name: "", company: "", company_id: "", visit_date: "", visit_time: "", role: "", contact: "", impression: "" };
   const [form, setForm] = useState(empty);

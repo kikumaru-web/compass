@@ -68,7 +68,7 @@ function QATab({ qaLibrary, deleteQA, openEdit }) {
       const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" }, body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 2500, messages: [{ role: "user", content: prompt }] }) });
       const data = await res.json(); const text = data.content?.[0]?.text || ""; const clean = text.replace(/```json|```/g, "").trim();
       const jsonMatch2 = clean.match(/\{[\s\S]*\}/); if (!jsonMatch2) throw new Error("JSONが見つかりません"); setQaFeedback((p) => ({ ...p, [q.id]: JSON.parse(jsonMatch2[0]) }));
-    } catch (e) { setQaFeedback((p) => ({ ...p, [q.id]: { error: "分析に失敗しました: " + e.message } })); } finally { setCheckingId(null); }
+    } catch (e) { try { setQaFeedback((p) => ({ ...p, [q.id]: { error: "分析に失敗しました: " + (e.message || "不明なエラー") } })); } catch {} } finally { setCheckingId(null); }
   };
 
   const qsq = qaSearch.trim().toLowerCase();
@@ -207,8 +207,8 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
       const prompt = `あなたは就活ES添削の専門家です。以下のES設問と回答を読み、設問のタイプを判断した上で適切な観点でフィードバックしてください。\n\n【設問】\n${e.question}\n${e.subtitle ? "\n【見出し・タイトル】\n" + e.subtitle + "\n" : ""}\n【文字数制限】${e.char_limit ? e.char_limit + "字" : "不明"}\n\n【回答】\n${e.answer}\n\n---\n\n設問タイプを判定し（personal/analytical/other）、JSONで返してください。\npersonalなら{type,structure,agency,specificity,impression,next_action,revision}\nanalyticalなら{type,problem_setting,root_cause,solution,choice_appropriateness,next_action,revision}\nrevision：だ・である調、文字数制限の90〜100%以内、冒頭に「【参考案・${e.char_limit ? e.char_limit+"字制限" : "字数制限なし"}】」。評価・点数不要。改善ヒントとして。`;
       const res = await fetch("https://api.anthropic.com/v1/messages", { method: "POST", headers: { "Content-Type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01", "anthropic-dangerous-direct-browser-access": "true" }, body: JSON.stringify({ model: "claude-haiku-4-5-20251001", max_tokens: 2500, messages: [{ role: "user", content: prompt }] }) });
       const data = await res.json(); const text = data.content?.[0]?.text || ""; const clean = text.replace(/```json|```/g, "").trim();
-      const jsonMatch = clean.match(/\{[\s\S]*\}/); if (!jsonMatch) throw new Error("JSONが見つかりません"); setCheckResult({ id: e.id, ...JSON.parse(jsonMatch[0]) });
-    } catch (err) { setCheckResult({ id: e.id, error: "チェックに失敗しました: " + err.message }); } finally { setCheckingId(null); }
+      const jsonMatch = clean.match(/\{[\s\S]*\}/); if (!jsonMatch) throw new Error("JSONが見つかりません"); try { setCheckResult({ id: e.id, ...JSON.parse(jsonMatch[0]) }); } catch (pe) { setCheckResult({ id: e.id, error: "応答の解析に失敗: " + pe.message }); }
+    } catch (err) { try { setCheckResult({ id: e.id, error: "チェックに失敗しました: " + (err.message || "不明なエラー") }); } catch {} } finally { setCheckingId(null); }
   };
 
   const esCard = (e) => {

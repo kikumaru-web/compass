@@ -74,7 +74,7 @@ export default function useAppData(userId) {
     } catch(e) { console.error("[Compass] loadAll error:", e); }
   }, [userId]);
 
-  function makeCrud(table, setter) {
+  function makeCrud(table, setter, getter) {
     return {
       add: async (data) => {
         try {
@@ -83,8 +83,21 @@ export default function useAppData(userId) {
         } catch { setter((p) => [{ id: Date.now(), ...data }, ...p]); }
       },
       update: async (id, data) => {
+        const old = getter().find((x) => x.id === id);
         setter((p) => p.map((x) => x.id === id ? { ...x, ...data } : x));
         try { await sbRest("PATCH", `${table}?id=eq.${id}`, data); } catch {}
+        if (table === "companies" && old && data.name && old.name !== data.name) {
+          const oldName = old.name;
+          const newName = data.name;
+          try {
+            await sbRest("PATCH", `es_answers?company=eq.${encodeURIComponent(oldName)}`, { company: newName });
+            await sbRest("PATCH", `deadlines?company_name=eq.${encodeURIComponent(oldName)}`, { company_name: newName });
+            await sbRest("PATCH", `ob_visits?company=eq.${encodeURIComponent(oldName)}`, { company: newName });
+            setEsAnswers((p) => p.map((x) => x.company === oldName ? { ...x, company: newName } : x));
+            setDeadlines((p) => p.map((x) => x.company_name === oldName ? { ...x, company_name: newName } : x));
+            setObVisits((p) => p.map((x) => x.company === oldName ? { ...x, company: newName } : x));
+          } catch (e) { console.warn("[Compass] rename sync error:", e); }
+        }
       },
       del: async (id) => {
         if (!window.confirm("本当に削除しますか？この操作は取り消せません。")) return;
@@ -136,15 +149,15 @@ export default function useAppData(userId) {
     studyProblems, setStudyProblems, studyLogs, setStudyLogs,
     spendable, setSpendable, currentGoal,
     loadAll, addLog, deleteLog, saveWeekGoal, redeem,
-    taskCrud: makeCrud("tasks", setTasks),
-    companyCrud: makeCrud("companies", setCompanies),
-    deadlineCrud: makeCrud("deadlines", setDeadlines),
-    rewardCrud: makeCrud("rewards", setRewards),
-    obCrud: makeCrud("ob_visits", setObVisits),
-    esCrud: makeCrud("es_answers", setEsAnswers),
-    qaCrud: makeCrud("qa_library", setQaLibrary),
-    matCrud: makeCrud("es_materials", setEsMaterials),
-    ideaCrud: makeCrud("ideas", setIdeas),
+    taskCrud: makeCrud("tasks", setTasks, () => tasks),
+    companyCrud: makeCrud("companies", setCompanies, () => companies),
+    deadlineCrud: makeCrud("deadlines", setDeadlines, () => deadlines),
+    rewardCrud: makeCrud("rewards", setRewards, () => rewards),
+    obCrud: makeCrud("ob_visits", setObVisits, () => obVisits),
+    esCrud: makeCrud("es_answers", setEsAnswers, () => esAnswers),
+    qaCrud: makeCrud("qa_library", setQaLibrary, () => qaLibrary),
+    matCrud: makeCrud("es_materials", setEsMaterials, () => esMaterials),
+    ideaCrud: makeCrud("ideas", setIdeas, () => ideas),
     linkCrud: makeCrud("user_links", setUserLinks),
   };
 }

@@ -223,7 +223,7 @@ export default function VaultView({ esAnswers, addES, updateES, deleteES, qaLibr
               {e.answer && <Badge color={C.teal}>{(e.answer || "").length}字</Badge>}
               <span style={{ fontSize: 10, color: isOpen ? C.teal : C.faint }}>{isOpen ? "▼" : "▶"}</span>
             </div>
-            <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: isOpen ? 99 : 2, WebkitBoxOrient: "vertical" }}>{e.question}</div>
+            <div style={{ fontSize: 13, fontWeight: 700, lineHeight: 1.4, whiteSpace: "pre-wrap", overflow: "hidden", display: "-webkit-box", WebkitLineClamp: isOpen ? 99 : 2, WebkitBoxOrient: "vertical" }}>{e.question}</div>
           </button>
           <div style={{ display: "flex", gap: 6, flexShrink: 0 }}><IconBtn onClick={() => open("es", e)} kind="edit" /><IconBtn onClick={() => deleteES(e.id)} kind="del" /></div>
         </div>

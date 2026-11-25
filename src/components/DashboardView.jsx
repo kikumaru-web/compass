@@ -57,6 +57,7 @@ function JobTimeline() {
 
 export default function DashboardView({ tasks, companies, logs, deadlines, rewards, spendable, weekGoal, saveWeekGoal, setView, addLog, onShowDailyChallenge, dailyDone, updateCompany }) {
   const [editingStage, setEditingStage] = useState(null);
+  const [showAllTasks, setShowAllTasks] = useState(false);
   const [editGoal, setEditGoal] = useState(false);
   const [goalDraft, setGoalDraft] = useState({ points: weekGoal?.points || 20, note: weekGoal?.note || "" });
   const [finishItems, setFinishItems] = useState(() => { try { return JSON.parse(localStorage.getItem("compass_finish_" + todayStr()) || "[]"); } catch { return []; } });
